@@ -5,14 +5,23 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.7.0
+  sdk: '>=3.7.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
+
+  # UI & Charts
   cupertino_icons: ^1.0.8
-  http: ^1.2.1
+  fl_chart: ^0.68.0
   image_picker: ^1.1.2
+  provider: ^6.1.2
+
+  # Backend - Supabase
+  supabase_flutter: ^2.6.0
+
+  # Networking
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:
@@ -28,6 +37,5 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
-
   assets:
     - asset/images/

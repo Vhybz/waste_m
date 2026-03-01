@@ -1,7 +1,9 @@
 
-import 'package:cjt_scan/data/mock_data.dart';
 import 'package:cjt_scan/models/scan_result.dart';
+import 'package:cjt_scan/utils/app_colors.dart';
+import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -11,129 +13,243 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  final Set<AnemiaStatus> _filters = {};
+  final supabase = Supabase.instance.client;
+  List<ScanResult> _allScans = [];
+  List<ScanResult> _filteredScans = [];
+  bool _isLoading = true;
+  String _selectedFilter = 'All';
 
-  List<ScanResult> get _filteredResults {
-    if (_filters.isEmpty) {
-      return mockHistory;
+  @override
+  void initState() {
+    super.initState();
+    _fetchHistory();
+  }
+
+  Future<void> _fetchHistory() async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      final List<dynamic> data = await supabase
+          .from('scans')
+          .select()
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
+
+      if (mounted) {
+        setState(() {
+          _allScans = data.map((json) => ScanResult.fromJson(json)).toList();
+          _applyFilter(_selectedFilter);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching history: $e');
+      if (mounted) setState(() => _isLoading = false);
     }
-    return mockHistory.where((result) => _filters.contains(result.status)).toList();
+  }
+
+  void _applyFilter(String filter) {
+    setState(() {
+      _selectedFilter = filter;
+      if (filter == 'All') {
+        _filteredScans = _allScans;
+      } else if (filter == 'Flagged') {
+        _filteredScans = _allScans.where((s) => s.status != AnemiaStatus.normal).toList();
+      } else {
+        _filteredScans = _allScans.where((s) => s.status.text == filter).toList();
+      }
+    });
+  }
+
+  Future<void> _deleteScan(String id) async {
+    try {
+      await supabase.from('scans').delete().eq('id', id);
+      _fetchHistory(); // Refresh
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Scan record deleted')),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error deleting scan: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scan History')),
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: const Text('Scan History', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
       body: Column(
         children: [
-          _buildFilterChips(),
+          _buildFilterBar(),
           Expanded(
-            child: _filteredResults.isEmpty
-                ? const Center(
-                    child: Text('No scan history found.', style: TextStyle(color: Colors.grey)),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _filteredResults.length,
-                    itemBuilder: (context, index) {
-                      final result = _filteredResults[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${result.confidence.toStringAsFixed(1)}% Confidence',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '${result.date.day}/${result.date.month}/${result.date.year}',
-                                      style: TextStyle(color: Colors.grey.shade600),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: result.statusColor,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  result.statusText.split(' ').first,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54),
-                                ),
-                              ),
-                            ],
-                          ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _filteredScans.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        onRefresh: _fetchHistory,
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(20),
+                          itemCount: _filteredScans.length,
+                          itemBuilder: (context, index) {
+                            return _HistoryCard(
+                              result: _filteredScans[index],
+                              onDelete: () => _deleteScan(_filteredScans[index].id),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChips() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+  Widget _buildFilterBar() {
+    final filters = ['All', 'Normal', 'Flagged', 'Mild', 'Moderate', 'Severe'];
+    return Container(
+      height: 60,
+      color: Colors.white,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          final isSelected = _selectedFilter == filter;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ChoiceChip(
+              label: Text(filter),
+              selected: isSelected,
+              onSelected: (selected) => _applyFilter(filter),
+              selectedColor: AppColors.primary.withValues(alpha: 0.2),
+              labelStyle: TextStyle(
+                color: isSelected ? AppColors.primary : Colors.black87,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FilterChip(
-            label: const Text('Normal'),
-            selected: _filters.contains(AnemiaStatus.normal),
-            onSelected: (selected) {
-              setState(() {
-                if (selected) {
-                  _filters.add(AnemiaStatus.normal);
-                } else {
-                  _filters.remove(AnemiaStatus.normal);
-                }
-              });
-            },
+          Icon(Icons.history_toggle_off_rounded, size: 80, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'No history found',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 18, fontWeight: FontWeight.w600),
           ),
-          const SizedBox(width: 8),
-          FilterChip(
-            label: const Text('Flagged'),
-            selected: _filters.contains(AnemiaStatus.mild) || _filters.contains(AnemiaStatus.moderate) || _filters.contains(AnemiaStatus.severe),
-            onSelected: (selected) {
-               setState(() {
-                if (selected) {
-                  _filters.add(AnemiaStatus.mild);
-                  _filters.add(AnemiaStatus.moderate);
-                  _filters.add(AnemiaStatus.severe);
-                } else {
-                  _filters.remove(AnemiaStatus.mild);
-                  _filters.remove(AnemiaStatus.moderate);
-                  _filters.remove(AnemiaStatus.severe);
-                }
-              });
-            },
+          const SizedBox(height: 8),
+          Text(
+            'Start a new scan to see your records here.',
+            style: TextStyle(color: Colors.grey.shade400),
           ),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.capture),
+            icon: const Icon(Icons.add_a_photo_rounded),
+            label: const Text('New Scan'),
+          )
         ],
+      ),
+    );
+  }
+}
+
+class _HistoryCard extends StatelessWidget {
+  final ScanResult result;
+  final VoidCallback onDelete;
+
+  const _HistoryCard({required this.result, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: InkWell(
+        onTap: () => Navigator.pushNamed(context, AppRoutes.results, arguments: result),
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: result.statusColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.analytics_rounded, color: result.statusColor),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      result.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${result.date.day}/${result.date.month}/${result.date.year} at ${result.date.hour}:${result.date.minute.toString().padLeft(2, '0')}',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    result.statusText,
+                    style: TextStyle(
+                      color: result.statusColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    '${result.confidence.toInt()}% Acc.',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 8),
+              PopupMenuButton(
+                icon: Icon(Icons.more_vert, color: Colors.grey.shade400),
+                onSelected: (val) {
+                  if (val == 'delete') onDelete();
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'delete', child: Text('Delete record', style: TextStyle(color: Colors.red))),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

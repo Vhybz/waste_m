@@ -1,6 +1,6 @@
 
 import 'package:cjt_scan/models/scan_result.dart';
-import 'package:cjt_scan/theme/app_theme.dart';
+import 'package:cjt_scan/utils/app_colors.dart';
 import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +12,6 @@ class ResultsScreen extends StatelessWidget {
     final result = ModalRoute.of(context)!.settings.arguments as ScanResult?;
 
     if (result == null) {
-      // Handle error case where result is null
       return Scaffold(
         appBar: AppBar(title: const Text('Error')),
         body: const Center(child: Text('No result data found.')),
@@ -20,15 +19,24 @@ class ResultsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Screening Result')),
-      body: Padding(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Screening Result', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 20),
+            // Result Card
             Card(
               elevation: 8,
-              shadowColor: result.statusColor.withOpacity(0.3),
+              shadowColor: result.statusColor.withValues(alpha: 0.3),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Column(
@@ -36,68 +44,76 @@ class ResultsScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
-                        color: result.statusColor,
-                        borderRadius: BorderRadius.circular(kAppCornerRadius),
+                        color: result.statusColor.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        result.statusText,
-                        style: const TextStyle(
+                        result.statusText.toUpperCase(),
+                        style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: result.statusColor,
                         ),
                       ),
                     ),
+                    const SizedBox(height: 32),
+                    Text(
+                      '${result.confidence.toStringAsFixed(1)}%',
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const Text(
+                      'Confidence Level',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                    const SizedBox(height: 32),
+                    const Divider(),
                     const SizedBox(height: 24),
                     Text(
-                      '${result.confidence.toStringAsFixed(1)}% Confidence',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                    const SizedBox(height: 16),
-                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Text(
-                        result.recommendation,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey.shade600,
-                              height: 1.4,
-                            ),
+                      result.recommendation,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Colors.black54,
+                        height: 1.6,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 48),
+            // Actions
             SizedBox(
               width: double.infinity,
-              child: FilledButton.tonal(
-                onPressed: () {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.capture,
-                    (route) => false,
-                  );
-                },
-                child: const Text('Scan Again'),
+              child: FilledButton.icon(
+                onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.capture),
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Scan Again', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
-                onPressed: () {
-                   Navigator.of(context).pushNamedAndRemoveUntil(
-                    AppRoutes.capture,
-                    (route) => false,
-                  );
-                  Navigator.of(context).pushNamed(AppRoutes.history);
-                },
-                child: const Text('View History'),
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.pushReplacementNamed(context, AppRoutes.home),
+                icon: const Icon(Icons.dashboard_rounded),
+                label: const Text('Back to Dashboard'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
               ),
             ),
+            const SizedBox(height: 40),
           ],
         ),
       ),

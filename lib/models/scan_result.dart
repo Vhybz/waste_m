@@ -1,32 +1,76 @@
-
 import 'package:cjt_scan/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 enum AnemiaStatus { normal, mild, moderate, severe, unknown, invalid }
 
+extension AnemiaStatusExtension on AnemiaStatus {
+  Color get color {
+    switch (this) {
+      case AnemiaStatus.normal:
+        return AppColors.normal;
+      case AnemiaStatus.mild:
+        return AppColors.mild;
+      case AnemiaStatus.moderate:
+        return AppColors.moderate;
+      case AnemiaStatus.severe:
+        return AppColors.severe;
+      case AnemiaStatus.unknown:
+      case AnemiaStatus.invalid:
+        return Colors.grey.shade300;
+    }
+  }
+
+  String get text {
+    switch (this) {
+      case AnemiaStatus.normal:
+        return 'Normal';
+      case AnemiaStatus.mild:
+        return 'Mild Anemia';
+      case AnemiaStatus.moderate:
+        return 'Moderate Anemia';
+      case AnemiaStatus.severe:
+        return 'Severe Anemia';
+      case AnemiaStatus.unknown:
+        return 'Unknown';
+      case AnemiaStatus.invalid:
+        return 'Invalid Image';
+    }
+  }
+}
+
 class ScanResult {
   final String id;
+  final String name; // Added to store scan name
   final AnemiaStatus status;
   final double confidence;
   final DateTime date;
+  final String? imagePath;
 
   ScanResult({
+    required this.id,
+    required this.name,
     required this.status,
     required this.confidence,
-  })  : id = UniqueKey().toString(),
-        date = DateTime.now();
+    required this.date,
+    this.imagePath,
+  });
 
   /// Factory constructor to create a ScanResult from a JSON object.
-  factory ScanResult.fromJson(Map<String, dynamic> json) {
-    // Check for explicit eyelid validation if provided by API
+  factory ScanResult.fromJson(Map<String, dynamic> json, {String? imagePath}) {
     final bool isValidEyelid = json['is_eyelid'] ?? true;
     
     if (!isValidEyelid) {
-      return ScanResult(status: AnemiaStatus.invalid, confidence: 0.0);
+      return ScanResult(
+        id: json['id']?.toString() ?? UniqueKey().toString(),
+        name: json['name'] ?? 'Unnamed Scan',
+        status: AnemiaStatus.invalid,
+        confidence: 0.0,
+        date: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+        imagePath: imagePath ?? json['image_path'],
+      );
     }
 
-    // Map the string status from the API to the AnemiaStatus enum
-    final statusString = json['prediction']?.toLowerCase() ?? 'unknown';
+    final statusString = (json['prediction'] ?? json['status'])?.toLowerCase() ?? 'unknown';
     AnemiaStatus status;
     switch (statusString) {
       case 'normal':
@@ -49,43 +93,18 @@ class ScanResult {
     }
 
     return ScanResult(
+      id: json['id']?.toString() ?? UniqueKey().toString(),
+      name: json['name'] ?? 'Unnamed Scan',
       status: status,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
+      date: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
+      imagePath: imagePath ?? json['image_path'],
     );
   }
 
-  String get statusText {
-    switch (status) {
-      case AnemiaStatus.normal:
-        return 'Normal';
-      case AnemiaStatus.mild:
-        return 'Mild Anemia';
-      case AnemiaStatus.moderate:
-        return 'Moderate Anemia';
-      case AnemiaStatus.severe:
-        return 'Severe Anemia';
-      case AnemiaStatus.unknown:
-        return 'Unknown';
-      case AnemiaStatus.invalid:
-        return 'Invalid Image';
-    }
-  }
+  String get statusText => status.text;
 
-  Color get statusColor {
-    switch (status) {
-      case AnemiaStatus.normal:
-        return AppColors.normal;
-      case AnemiaStatus.mild:
-        return AppColors.mild;
-      case AnemiaStatus.moderate:
-        return AppColors.moderate;
-      case AnemiaStatus.severe:
-        return AppColors.severe;
-      case AnemiaStatus.unknown:
-      case AnemiaStatus.invalid:
-        return Colors.grey.shade300;
-    }
-  }
+  Color get statusColor => status.color;
 
   String get recommendation {
     switch (status) {

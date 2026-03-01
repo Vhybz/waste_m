@@ -1,8 +1,8 @@
 
 import 'dart:io';
-import 'package:cjt_scan/models/scan_result.dart';
-import 'package:cjt_scan/services/api_service.dart';
+import 'dart:ui';
 import 'package:cjt_scan/utils/app_routes.dart';
+import 'package:cjt_scan/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -13,314 +13,274 @@ class CaptureScreen extends StatefulWidget {
   State<CaptureScreen> createState() => _CaptureScreenState();
 }
 
-class _CaptureScreenState extends State<CaptureScreen> {
+class _CaptureScreenState extends State<CaptureScreen> with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
-  final ApiService _apiService = ApiService();
+  late AnimationController _pulseController;
 
-  File? _imageFile;
-  ScanResult? _scanResult;
-  bool _isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
 
-  /// Initiates the image capture process and calls the API.
-  Future<void> _captureAndScan() async {
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleImageAction(ImageSource source) async {
     try {
-      // 1. Capture image
-      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 1000,
+        maxHeight: 1000,
+        imageQuality: 85,
+      );
 
-      if (image != null) {
-        setState(() {
-          _imageFile = File(image.path);
-          _isLoading = true;
-          _scanResult = null; // Clear previous results
-        });
-
-        // 2. Send to API
-        final result = await _apiService.scanImage(_imageFile!);
-
-        setState(() {
-          _scanResult = result;
-          _isLoading = false;
-        });
-
-      } else {
-        // User canceled the capture
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image capture was canceled.')),
-          );
-        }
+      if (image != null && mounted) {
+        Navigator.of(context).pushNamed(AppRoutes.processing, arguments: File(image.path));
       }
     } catch (e) {
-      // 3. Handle errors
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(
+            content: Text('Could not select image: ${e.toString()}'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.redAccent,
+          ),
         );
       }
     }
   }
 
-  /// Resets the screen to its initial state to allow for a new scan.
-  void _reset() {
-    setState(() {
-      _imageFile = null;
-      _scanResult = null;
-      _isLoading = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Ready to Scan'),
-        leading: _buildPopupMenu(),
+        title: const Text('Scan Conjunctiva', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        automaticallyImplyLeading: true,
       ),
       body: Stack(
-        alignment: Alignment.center,
         children: [
-          if (_imageFile == null)
-            _CameraPlaceholder(
-              onCapture: _captureAndScan,
-            )
-          else
-            // Show the captured image as a preview
-            Image.file(
-              _imageFile!,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
+          // 1. The Camera Area (Placeholder)
+          const Positioned.fill(child: _CameraBackground()),
+
+          // 2. The Active Scanning Guide
+          _AnimatedScanningGuide(pulseController: _pulseController),
+
+          // 3. Lighting/Positioning Hints
+          const Positioned(
+            top: 120,
+            left: 0,
+            right: 0,
+            child: _ScanningHints(),
+          ),
+
+          // 4. The Premium Bottom Control Panel
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _BeautifiedControlPanel(
+              onCameraTap: () => _handleImageAction(ImageSource.camera),
+              onGalleryTap: () => _handleImageAction(ImageSource.gallery),
             ),
-
-          if (_scanResult != null)
-            _ResultCard(result: _scanResult!, onScanAgain: _reset),
-
-          if (_isLoading)
-            const _LoadingOverlay(),
+          ),
         ],
       ),
     );
   }
-  
-  PopupMenuButton _buildPopupMenu() {
-    return PopupMenuButton(
-          icon: const Icon(Icons.menu),
-          onSelected: (selection) {
-            switch (selection) {
-              case 'disclaimer':
-                Navigator.of(context).pushNamed(AppRoutes.disclaimer);
-                break;
-              case 'history':
-                Navigator.of(context).pushNamed(AppRoutes.history);
-                break;
-              case 'logout':
-                Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
-                break;
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-            const PopupMenuItem(
-              value: 'disclaimer',
-              child: Text('View Disclaimer'),
-            ),
-            const PopupMenuItem(
-              value: 'history',
-              child: Text('View History'),
-            ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
-              value: 'logout',
-              child: Text('Logout'),
-            ),
-          ],
-        );
-  }
 }
 
-// --- WIDGETS --- //
-
-/// A placeholder UI shown before an image is captured.
-class _CameraPlaceholder extends StatelessWidget {
-  final VoidCallback onCapture;
-  const _CameraPlaceholder({required this.onCapture});
-
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          color: Colors.black87,
-          child: const Center(
-            child: Icon(Icons.camera_alt, color: Colors.white24, size: 64),
-          ),
-        ),
-        // Scan Guide Overlay
-        Container(
-          width: screenSize.width * 0.8,
-          height: screenSize.width * 0.8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.7), width: 3),
-          ),
-        ),
-
-        Positioned(
-          bottom: 0,
-          child: _BottomPanel(onCapture: onCapture),
-        ),
-      ],
-    );
-  }
-}
-
-/// The curved bottom panel with instructions and the capture button.
-class _BottomPanel extends StatelessWidget {
-  final VoidCallback onCapture;
-  const _BottomPanel({required this.onCapture});
-
-  @override
-  Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
-    return Stack(
-      alignment: Alignment.topCenter,
-      children: [
-        Container(
-          width: screenSize.width,
-          height: screenSize.height * 0.25,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 20,
-                spreadRadius: 5,
-              ),
-            ],
-          ),
-          child: const Center(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 20.0),
-              child: Text(
-                'Position your lower eyelid inside the circle',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ),
-          ),
-        ),
-        // Capture Button
-        Transform.translate(
-          offset: const Offset(0, -35),
-          child: SizedBox(
-            width: 70,
-            height: 70,
-            child: FloatingActionButton(
-              onPressed: onCapture,
-              child: const Icon(Icons.camera_alt, size: 35),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// A semi-transparent overlay with a loading indicator.
-class _LoadingOverlay extends StatelessWidget {
-  const _LoadingOverlay();
-
+class _CameraBackground extends StatelessWidget {
+  const _CameraBackground();
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black.withOpacity(0.6),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: Colors.white),
-            SizedBox(height: 24),
-            Text(
-              'Analyzing...',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
+      decoration: const BoxDecoration(
+        color: Colors.black,
+      ),
+      child: Center(
+        child: Icon(Icons.camera_alt_rounded, size: 100, color: Colors.white.withValues(alpha: 0.05)),
+      ),
+    );
+  }
+}
+
+class _AnimatedScanningGuide extends StatelessWidget {
+  final AnimationController pulseController;
+  const _AnimatedScanningGuide({required this.pulseController});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: pulseController,
+        builder: (context, child) {
+          return Container(
+            width: 280 + (10 * pulseController.value),
+            height: 280 + (10 * pulseController.value),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3 + (0.4 * pulseController.value)),
+                width: 2,
               ),
             ),
-          ],
+            child: Center(
+              child: Container(
+                width: 240,
+                height: 240,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.primary, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.2 * pulseController.value),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    )
+                  ],
+                ),
+                child: const Icon(Icons.add, color: Colors.white24, size: 40),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _ScanningHints extends StatelessWidget {
+  const _ScanningHints();
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.wb_sunny_rounded, color: Colors.amber, size: 16),
+              SizedBox(width: 8),
+              Text('Good lighting detected', style: TextStyle(color: Colors.white70, fontSize: 12)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _BeautifiedControlPanel extends StatelessWidget {
+  final VoidCallback onCameraTap;
+  final VoidCallback onGalleryTap;
+  const _BeautifiedControlPanel({required this.onCameraTap, required this.onGalleryTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(32, 32, 32, 48),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.9),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, -5))
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 24),
+              const Text('Capture Scan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+              const SizedBox(height: 12),
+              Text(
+                'Pull down your lower eyelid and align it within the circular guide for the best result.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade600, height: 1.5, fontSize: 15),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  _PanelButton(
+                    onTap: onGalleryTap,
+                    icon: Icons.photo_library_outlined,
+                    label: 'Gallery',
+                    isPrimary: false,
+                  ),
+                  const SizedBox(width: 16),
+                  _PanelButton(
+                    onTap: onCameraTap,
+                    icon: Icons.camera_alt_rounded,
+                    label: 'Capture',
+                    isPrimary: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-/// A card that displays the scan result and recommendation.
-class _ResultCard extends StatelessWidget {
-  final ScanResult result;
-  final VoidCallback onScanAgain;
+class _PanelButton extends StatelessWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+  final String label;
+  final bool isPrimary;
 
-  const _ResultCard({required this.result, required this.onScanAgain});
+  const _PanelButton({required this.onTap, required this.icon, required this.label, required this.isPrimary});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(24.0),
-      child: Card(
-        elevation: 8,
-        shadowColor: result.statusColor.withOpacity(0.3),
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          decoration: BoxDecoration(
+            color: isPrimary ? AppColors.primary : Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: isPrimary ? [
+              BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))
+            ] : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                decoration: BoxDecoration(
-                  color: result.statusColor,
-                  borderRadius: BorderRadius.circular(28.0),
-                ),
-                child: Text(
-                  result.statusText,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+              Icon(icon, color: isPrimary ? Colors.white : Colors.black87, size: 20),
+              const SizedBox(width: 10),
               Text(
-                '${result.confidence.toStringAsFixed(1)}% Confidence',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  result.recommendation,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey.shade600,
-                        height: 1.4,
-                      ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.tonal(
-                  onPressed: onScanAgain,
-                  child: const Text('Scan Again'),
+                label,
+                style: TextStyle(
+                  color: isPrimary ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
                 ),
               ),
             ],
