@@ -1,7 +1,8 @@
 
-import 'package:cjt_scan/screens/about_screen.dart';
+import 'package:cjt_scan/screens/about_app_screen.dart'; // Verified Import
 import 'package:cjt_scan/screens/analytics_screen.dart';
 import 'package:cjt_scan/screens/capture_screen.dart';
+import 'package:cjt_scan/screens/chat_screen.dart';
 import 'package:cjt_scan/screens/disclaimer_screen.dart';
 import 'package:cjt_scan/screens/history_screen.dart';
 import 'package:cjt_scan/screens/home_screen.dart';
@@ -36,7 +37,7 @@ void main() async {
     runApp(
       ChangeNotifierProvider(
         create: (context) => ThemeProvider(),
-        child: const CjtScanAIApp(),
+        child: const AnemiaScanAIApp(),
       ),
     );
   } catch (e) {
@@ -54,27 +55,14 @@ void main() async {
   }
 }
 
-class CjtScanAIApp extends StatefulWidget {
-  const CjtScanAIApp({super.key});
+class AnemiaScanAIApp extends StatefulWidget {
+  const AnemiaScanAIApp({super.key});
 
   @override
-  State<CjtScanAIApp> createState() => _CjtScanAIAppState();
+  State<AnemiaScanAIApp> createState() => _AnemiaScanAIAppState();
 }
 
-class _CjtScanAIAppState extends State<CjtScanAIApp> {
-  @override
-  void initState() {
-    super.initState();
-    // Listen for auth state changes globally
-    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-      final session = data.session;
-      if (session != null) {
-        // Force refresh the app state if a session is detected
-        debugPrint('Auth session detected globally');
-      }
-    });
-  }
-
+class _AnemiaScanAIAppState extends State<AnemiaScanAIApp> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([
@@ -87,7 +75,7 @@ class _CjtScanAIAppState extends State<CjtScanAIApp> {
         return MaterialApp(
           title: 'cjt_scan AI',
           theme: AppTheme.lightTheme,
-          darkTheme: ThemeData.dark(useMaterial3: true),
+          darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
           debugShowCheckedModeBanner: false,
           initialRoute: AppRoutes.splash,
@@ -100,7 +88,8 @@ class _CjtScanAIAppState extends State<CjtScanAIApp> {
             AppRoutes.profile: (context) => const ProfileScreen(),
             AppRoutes.settings: (context) => const SettingsScreen(),
             AppRoutes.analytics: (context) => const AnalyticsScreen(),
-            AppRoutes.about: (context) => const AboutScreen(),
+            AppRoutes.chat: (context) => const ChatScreen(),
+            AppRoutes.aboutApp: (context) => const AboutAppScreen(), // REGISTERED ROUTE
             AppRoutes.disclaimer: (context) => const DisclaimerScreen(),
             AppRoutes.capture: (context) => const CaptureScreen(),
             AppRoutes.processing: (context) => const ProcessingScreen(),

@@ -16,6 +16,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final supabase = Supabase.instance.client;
   ScanResult? _lastScan;
   String _userName = 'User';
+  String _userTitle = '';
+  String? _profileImageUrl;
   bool _isLoading = true;
 
   @override
@@ -26,29 +28,40 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchInitialData() async {
     await Future.wait([
-      _fetchProfileName(),
+      _fetchProfileData(),
       _fetchLastScan(),
     ]);
   }
 
-  Future<void> _fetchProfileName() async {
+  Future<void> _fetchProfileData() async {
     try {
       final user = supabase.auth.currentUser;
       if (user == null) return;
 
       final data = await supabase
           .from('profiles')
-          .select('firstname')
+          .select('firstname, profile_pic, gender')
           .eq('id', user.id)
           .maybeSingle();
 
       if (data != null && mounted) {
+        final String rawGender = (data['gender'] ?? '').toString().toLowerCase();
+        
         setState(() {
           _userName = data['firstname'] ?? 'User';
+          _profileImageUrl = data['profile_pic'];
+          
+          if (rawGender == 'male') {
+            _userTitle = 'Mr. ';
+          } else if (rawGender == 'female') {
+            _userTitle = 'Miss ';
+          } else {
+            _userTitle = '';
+          }
         });
       }
     } catch (e) {
-      debugPrint('Error fetching name: $e');
+      debugPrint('Error fetching profile data: $e');
     }
   }
 
@@ -86,65 +99,74 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFBFBFE),
-      // --- BEAUTIFIED APPBAR ---
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(100),
+        preferredSize: const Size.fromHeight(110),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: const Color(0xFF7E57C2).withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               child: Row(
                 children: [
                   Builder(
-                    builder: (context) => IconButton(
-                      icon: const Icon(Icons.menu_open_rounded, color: AppColors.primary, size: 28),
-                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    builder: (context) => Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.menu_rounded, color: Colors.white, size: 26),
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Hello, $_userName',
+                          'Welcome back,',
                           style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const Text(
-                          'AnemiaScan AI',
-                          style: TextStyle(
+                        Text(
+                          '$_userTitle$_userName',
+                          style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: Colors.white,
                             letterSpacing: -0.5,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  _buildProfileAvatar(),
+                  _buildTopProfileAvatar(),
                 ],
               ),
             ),
           ),
         ),
       ),
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(userName: '$_userTitle$_userName', profileImageUrl: _profileImageUrl),
       body: RefreshIndicator(
         onRefresh: _fetchInitialData,
         child: SingleChildScrollView(
@@ -156,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (!isEmailVerified) _buildVerificationBanner(user?.email),
               
               const Text(
-                'Ready for your checkup?',
+                'Health Overview',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
               const SizedBox(height: 16),
@@ -171,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Recent Record',
+                    'Recent Screening',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   if (_lastScan != null)
@@ -189,24 +211,39 @@ class _HomeScreenState extends State<HomeScreen> {
               
               const SizedBox(height: 32),
               const _InfoBanner(),
-              const SizedBox(height: 40),
+              const SizedBox(height: 80), 
             ],
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.pushNamed(context, AppRoutes.chat),
+        backgroundColor: AppColors.primary,
+        elevation: 4,
+        child: const Icon(Icons.support_agent_rounded, size: 32, color: Colors.white),
+      ),
     );
   }
 
-  Widget _buildProfileAvatar() {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1), width: 2),
-      ),
-      child: CircleAvatar(
-        radius: 22,
-        backgroundColor: AppColors.primary.withValues(alpha: 0.05),
-        child: const Icon(Icons.person_outline_rounded, color: AppColors.primary, size: 24),
+  Widget _buildTopProfileAvatar() {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 1.5),
+        ),
+        child: CircleAvatar(
+          radius: 22,
+          backgroundColor: Colors.white.withValues(alpha: 0.2),
+          backgroundImage: (_profileImageUrl != null && _profileImageUrl!.isNotEmpty) 
+              ? NetworkImage(_profileImageUrl!) 
+              : null,
+          child: (_profileImageUrl == null || _profileImageUrl!.isEmpty)
+              ? const Icon(Icons.person_rounded, color: Colors.white, size: 22)
+              : null,
+        ),
       ),
     );
   }
@@ -230,11 +267,11 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Action Required',
+                  'Verify Email',
                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
                 ),
                 Text(
-                  'Confirm your email to secure your data.',
+                  'Protect your screening history.',
                   style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
                 ),
               ],
@@ -265,17 +302,17 @@ class _HeroScanButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 160,
+      constraints: const BoxConstraints(minHeight: 160),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.primary, Color(0xFF7E57C2)],
+          colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
+            color: const Color(0xFF5E35B1).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           )
@@ -286,44 +323,48 @@ class _HeroScanButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(28),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -20,
-                bottom: -20,
-                child: Icon(Icons.camera_alt, size: 120, color: Colors.white.withValues(alpha: 0.15)),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Scan Your Eye',
-                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'AI conjunctiva analysis',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        'Start Screening',
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: Stack(
+              children: [
+                Positioned(
+                  right: -20,
+                  bottom: -20,
+                  child: Icon(Icons.camera_alt, size: 120, color: Colors.white.withValues(alpha: 0.1)),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Instant Screening',
+                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'AI conjunctiva scan analysis',
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Text(
+                          'Start Screening',
+                          style: TextStyle(color: Color(0xFF5E35B1), fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -351,12 +392,12 @@ class _LastScanCard extends StatelessWidget {
             Icon(Icons.analytics_outlined, size: 48, color: Colors.grey.shade300),
             const SizedBox(height: 12),
             Text(
-              'No records yet',
+              'No screenings yet',
               style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
-              'Your screening history will appear here.',
+              'Your scan results will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
             ),
@@ -378,48 +419,58 @@ class _LastScanCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
-              color: scanResult!.statusColor.withValues(alpha: 0.2),
+              color: scanResult!.statusColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(Icons.assignment_turned_in_rounded, color: scanResult!.statusColor, size: 32),
+            child: Icon(Icons.assignment_turned_in_rounded, color: scanResult!.statusColor, size: 28),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   scanResult!.name,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Row(
                   children: [
-                    const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                    const Icon(Icons.access_time, size: 12, color: Colors.grey),
                     const SizedBox(width: 4),
-                    Text(
-                      '${scanResult!.date.day}/${scanResult!.date.month}/${scanResult!.date.year}',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                    Flexible(
+                      child: Text(
+                        '${scanResult!.date.day}/${scanResult!.date.month}/${scanResult!.date.year}',
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${scanResult!.confidence.toInt()}%',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary),
-              ),
-              const Text('Accuracy', style: TextStyle(color: Colors.grey, fontSize: 11)),
-            ],
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 60,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${scanResult!.confidence.toInt()}%',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF5E35B1)),
+                ),
+                const Text('Accuracy', style: TextStyle(color: Colors.grey, fontSize: 10)),
+              ],
+            ),
           ),
         ],
       ),
@@ -441,7 +492,7 @@ class _InfoBanner extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.tips_and_updates_rounded, color: AppColors.primary, size: 32),
+          const Icon(Icons.tips_and_updates_rounded, color: Color(0xFF5E35B1), size: 32),
           const SizedBox(height: 12),
           const Text(
             'Clinical Health Tip',
@@ -459,7 +510,10 @@ class _InfoBanner extends StatelessWidget {
 }
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  final String userName;
+  final String? profileImageUrl;
+
+  const AppDrawer({super.key, required this.userName, this.profileImageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -469,26 +523,70 @@ class AppDrawer extends StatelessWidget {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(24))),
       child: Column(
         children: [
-          UserAccountsDrawerHeader(
-            decoration: const BoxDecoration(color: AppColors.primary),
-            currentAccountPicture: const CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Icon(Icons.person, color: AppColors.primary, size: 40),
+          // Sidebar header with gradient
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
-            accountName: const Text('My Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-            accountEmail: Text(user?.email ?? 'Guest User'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  backgroundImage: (profileImageUrl != null && profileImageUrl!.isNotEmpty) ? NetworkImage(profileImageUrl!) : null,
+                  child: (profileImageUrl == null || profileImageUrl!.isEmpty)
+                    ? const Icon(Icons.person, color: Colors.white, size: 35)
+                    : null,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  userName,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                Text(
+                  user?.email ?? 'Guest User',
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 13),
+                ),
+              ],
+            ),
           ),
           Expanded(
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                _buildDrawerItem(context, Icons.home_rounded, 'Home', AppRoutes.home),
-                _buildDrawerItem(context, Icons.person_rounded, 'Profile', AppRoutes.profile),
-                _buildDrawerItem(context, Icons.settings_rounded, 'Settings', AppRoutes.settings),
+                // 1. PRIMARY TOOLS (High Importance)
+                _buildDrawerItem(context, Icons.support_agent_rounded, 'AI Health Assistant', AppRoutes.chat),
                 _buildDrawerItem(context, Icons.analytics_rounded, 'Health Analytics', AppRoutes.analytics),
-                const Divider(indent: 20, endIndent: 20),
                 _buildDrawerItem(context, Icons.history_rounded, 'Scan History', AppRoutes.history),
-                _buildDrawerItem(context, Icons.info_rounded, 'Guidelines', AppRoutes.disclaimer),
+                const Divider(indent: 20, endIndent: 20),
+                
+                // 2. CONFIGURATION (Medium Importance)
+                _buildDrawerItem(context, Icons.settings_rounded, 'Account Settings', AppRoutes.settings),
+                const Divider(indent: 20, endIndent: 20),
+                
+                // 3. INFORMATION (Last before Sign Out)
+                _buildDrawerItem(context, Icons.info_outline_rounded, 'About App & Author', AppRoutes.aboutApp),
+                _buildDrawerItem(context, Icons.verified_user_outlined, 'Safety Guidelines', AppRoutes.disclaimer),
+                
+                // 4. SESSION
+                const Divider(indent: 20, endIndent: 20),
+                ListTile(
+                  leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
+                  title: const Text('Sign Out', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  onTap: () async {
+                    await Supabase.instance.client.auth.signOut();
+                    if (context.mounted) {
+                      Navigator.of(context).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+                    }
+                  },
+                ),
               ],
             ),
           ),

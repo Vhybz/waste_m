@@ -1,5 +1,5 @@
 name: cjt_scan
-description: "A new Flutter project."
+description: "A premium AI-powered medical screening app for Anemia detection."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -11,16 +11,18 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # UI & Charts
+  # UI & Core
   cupertino_icons: ^1.0.8
+  provider: ^6.1.2
+  url_launcher: ^6.3.1
   fl_chart: ^0.68.0
   image_picker: ^1.1.2
-  provider: ^6.1.2
 
-  # Backend - Supabase
+  # AI - UPDATED TO LATEST STABLE
+  google_generative_ai: ^0.4.7
+
+  # Backend
   supabase_flutter: ^2.6.0
-
-  # Networking
   http: ^1.2.1
 
 dev_dependencies:
@@ -39,3 +41,4 @@ flutter:
   uses-material-design: true
   assets:
     - asset/images/
+    - asset/images/pp.jpg

@@ -8,7 +8,10 @@ class AppRoutes {
   static const profile = '/profile';
   static const settings = '/settings';
   static const analytics = '/analytics';
-  static const about = '/about'; // Added about route
+  static const chat = '/chat';
+  static const about = '/about';
+  static const developer = '/developer';
+  static const aboutApp = '/about_app'; // Added about app route
   static const disclaimer = '/disclaimer';
   static const capture = '/capture';
   static const processing = '/processing';
