@@ -1,11 +1,11 @@
 
 import 'dart:io';
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -23,7 +23,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isUploading = false;
   bool _isEditing = false;
 
-  // Controllers for editing
   final _firstNameController = TextEditingController();
   final _surnameController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -186,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Form(
@@ -252,11 +251,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildViewSection() {
     return Column(
       children: [
-        Text('${_profileData!['firstname']} ${_profileData!['surname']}', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+        Text('${_profileData!['firstname'] ?? ''} ${_profileData!['surname'] ?? ''}', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
         const SizedBox(height: 32),
         _buildSectionHeader('Personal Information'),
-        _buildInfoTile(Icons.person_outline_rounded, 'First Name', _profileData!['firstname']),
-        _buildInfoTile(Icons.person_outline_rounded, 'Surname', _profileData!['surname']),
+        _buildInfoTile(Icons.person_outline_rounded, 'First Name', _profileData!['firstname'] ?? 'Not set'),
+        _buildInfoTile(Icons.person_outline_rounded, 'Surname', _profileData!['surname'] ?? 'Not set'),
         _buildInfoTile(Icons.calendar_month_rounded, 'Date of Birth', _profileData!['dob'] ?? 'Not set'),
         _buildInfoTile(Icons.wc_rounded, 'Gender', _profileData!['gender'] ?? 'Not set'),
         const SizedBox(height: 24),
@@ -282,7 +281,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (date != null) setState(() => _dobController.text = date.toString().split(' ')[0]);
         }),
         _buildDropdown('Gender', ['Male', 'Female', 'Other'], _selectedGender, (val) => setState(() => _selectedGender = val)),
-        _buildDropdown('Profession', ['Doctor', 'Nurse', 'Student', 'Other'], _selectedProfession, (val) => setState(() => _selectedProfession = val)),
+        _buildDropdown('Profession', ['Student', 'Professional', 'Other'], _selectedProfession, (val) => setState(() => _selectedProfession = val)),
       ],
     );
   }

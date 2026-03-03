@@ -1,5 +1,5 @@
 
-import 'package:cjt_scan/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,19 +17,18 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      // --- MASTER UI: LIGHT PURPLE GRADIENT APPBAR ---
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(110),
         child: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+              colors: [AppColors.primary, AppColors.primaryLight],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7E57C2).withValues(alpha: 0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -47,7 +46,7 @@ class AboutScreen extends StatelessWidget {
                   const Expanded(
                     child: Center(
                       child: Text(
-                        'About cjt_scan AI',
+                        'About WasteSort AI',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -86,29 +85,29 @@ class AboutScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF7E57C2).withValues(alpha: 0.2), width: 2),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 2),
               ),
               child: const CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.white,
-                backgroundImage: AssetImage('asset/images/img_2.png'),
+                backgroundImage: AssetImage('asset/images/a.jpg'),
               ),
             ),
           ),
           const SizedBox(height: 32),
           const Text(
-            'What is cjt_scan AI?',
+            'What is WasteSort AI?',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
           ),
           const SizedBox(height: 16),
-          Text(
-            'cjt_scan AI is a cutting-edge medical screening tool designed to detect potential signs of anemia through non-invasive analysis of the palpebral conjunctiva (lower eyelid).',
+          const Text(
+            'WasteSort AI is a cutting-edge environmental tool designed to assist in the proper classification of waste into biodegradable and non-biodegradable categories using advanced AI models.',
             style: TextStyle(fontSize: 16, height: 1.6, color: Colors.black54),
           ),
           const SizedBox(height: 32),
-          _buildFeatureRow(Icons.psychology_outlined, 'AI Precision', 'State-of-the-art computer vision analyzes pallor markers in seconds.'),
-          _buildFeatureRow(Icons.speed_rounded, 'Instant Analysis', 'Receive screening feedback instantly without invasive blood draws.'),
-          _buildFeatureRow(Icons.security_rounded, 'Secure Data', 'Your health records are encrypted and stored with maximum privacy.'),
+          _buildFeatureRow(Icons.auto_awesome_outlined, 'AI Classification', 'Our machine learning models provide instant sorting guidance for everyday items.'),
+          _buildFeatureRow(Icons.recycling_rounded, 'Sustainability Focus', 'Designed to reduce landfill waste by empowering users with proper recycling knowledge.'),
+          _buildFeatureRow(Icons.security_rounded, 'Local Processing', 'Waste classification is performed on-device, ensuring speed and data privacy.'),
           const SizedBox(height: 24),
           _buildDisclaimerCard(),
         ],
@@ -120,7 +119,7 @@ class AboutScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24.0),
-      color: Colors.grey.shade50,
+      color: AppColors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -162,8 +161,7 @@ class AboutScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           const Text(
-            'I am a Data Scientist who completed my BSc in Information Technology at the University of Energy and Natural Resources in Ghana, Bono Region - Fiapre. '
-            'I completed Mmeredane Estate JHS, and Twene Amanfo Secondary and Technical School.',
+            'I am a Data Scientist who completed my BSc in Information Technology at the University of Energy and Natural Resources in Ghana, Bono Region - Fiapre. I am dedicated to using AI to solve environmental challenges.',
             style: TextStyle(fontSize: 14, height: 1.6, color: Colors.black54),
           ),
           const SizedBox(height: 32),
@@ -192,7 +190,7 @@ class AboutScreen extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: const Color(0xFF7E57C2), size: 24),
+          Icon(icon, color: AppColors.primary, size: 24),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -235,18 +233,18 @@ class AboutScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.05),
+        color: Colors.green.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.1)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
       ),
       child: const Row(
         children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.red),
+          Icon(Icons.info_outline_rounded, color: AppColors.primary),
           SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Important: This app is a screening tool and NOT a medical diagnosis. Always consult a healthcare provider.',
-              style: TextStyle(fontSize: 13, color: Colors.red, fontWeight: FontWeight.w600),
+              'Helpful Tip: Proper waste classification helps reduce environmental pollution. Use the camera to identify materials.',
+              style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
             ),
           ),
         ],

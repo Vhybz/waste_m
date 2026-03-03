@@ -1,5 +1,5 @@
 
-import 'package:cjt_scan/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,18 +17,19 @@ class AboutAppScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      // --- MASTER UI: LIGHT GREEN GRADIENT APPBAR ---
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(110),
         child: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+              colors: [AppColors.primary, AppColors.primaryLight],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7E57C2).withValues(alpha: 0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -87,31 +88,42 @@ class AboutAppScreen extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF7E57C2).withValues(alpha: 0.2), width: 2),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 2),
               ),
               child: const CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.white,
-                backgroundImage: AssetImage('asset/images/img_2.png'),
+                backgroundImage: AssetImage('asset/images/a.jpg'),
               ),
             ),
           ),
           const SizedBox(height: 24),
           const Text(
-            'What is cjt_scan AI?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5),
+            'WasteSort AI',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           const Text(
-            'cjt_scan AI is a specialized medical screening tool designed to detect potential signs of anemia through non-invasive analysis of the palpebral conjunctiva (lower eyelid).',
-            style: TextStyle(fontSize: 16, height: 1.6, color: Colors.black54),
+            'WasteSort AI is an innovative environmental tool designed to promote sustainable waste management through AI-powered classification of biodegradable and non-biodegradable materials.',
+            style: TextStyle(fontSize: 15, height: 1.6, color: Colors.black54),
           ),
           const SizedBox(height: 32),
-          _buildFeatureRow(Icons.psychology_outlined, 'AI Precision', 'State-of-the-art computer vision analyzes pallor markers in seconds.'),
-          _buildFeatureRow(Icons.speed_rounded, 'Instant Analysis', 'Receive screening feedback instantly without invasive blood draws.'),
-          _buildFeatureRow(Icons.security_rounded, 'Secure Data', 'Your health records are encrypted and stored with maximum privacy.'),
+          _buildFeatureRow(Icons.auto_awesome_outlined, 'AI Classification', 'Leverages local TFLite models to identify waste types instantly without an internet connection.'),
+          _buildFeatureRow(Icons.recycling_rounded, 'Eco-Friendly Guidance', 'Provides actionable advice on composting and proper recycling practices.'),
+          _buildFeatureRow(Icons.bar_chart_rounded, 'Sustainability Tracking', 'Monitor your sorting habits over time to visualize your environmental impact.'),
           const SizedBox(height: 24),
-          _buildDisclaimerCard(),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+            ),
+            child: const Text(
+              'Mission: To empower individuals and communities with technology to build a cleaner, greener future.',
+              style: TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
@@ -121,7 +133,7 @@ class AboutAppScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24.0),
-      color: Colors.grey.shade50,
+      color: AppColors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -173,26 +185,15 @@ class AboutAppScreen extends StatelessWidget {
             'I completed Mmeredane Estate JHS, and Twene Amanfo Secondary and Technical School.',
             style: TextStyle(fontSize: 14, height: 1.6, color: Colors.black54),
           ),
-          const SizedBox(height: 32),
-          const Text(
-            'Connect with me:',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 12,
+          const SizedBox(height: 24),
+          Row(
             children: [
-              _buildSocialChip(
-                icon: Icons.code_rounded,
-                label: 'GitHub',
-                onTap: () => _launchURL('https://github.com/Vhybz'),
-              ),
               _buildSocialChip(
                 icon: Icons.link_rounded,
                 label: 'LinkedIn',
                 onTap: () => _launchURL('https://www.linkedin.com/in/kyeremeh-clifford-9690082b3'),
               ),
+              const SizedBox(width: 8),
               _buildSocialChip(
                 icon: Icons.facebook_rounded,
                 label: 'Facebook',
@@ -239,36 +240,12 @@ class AboutAppScreen extends StatelessWidget {
           border: Border.all(color: Colors.grey.shade200),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 16, color: AppColors.primary),
             const SizedBox(width: 6),
             Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDisclaimerCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.red.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withValues(alpha: 0.1)),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.red),
-          SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              'Important: This app is a screening tool and NOT a medical diagnosis. Always consult a healthcare provider.',
-              style: TextStyle(fontSize: 13, color: Colors.red, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
       ),
     );
   }

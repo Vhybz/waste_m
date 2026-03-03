@@ -1,6 +1,6 @@
 
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -17,6 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -27,19 +28,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 onPageChanged: (value) => setState(() => _currentPage = value),
                 children: const [
                   _OnboardingPage(
-                    imageAsset: 'asset/images/img.png',
-                    title: 'Welcome to CJT Scan',
-                    subtitle: 'Your personal AI-powered tool for non-invasive anemia screening using just your smartphone camera.',
+                    imageAsset: 'asset/images/b.jpg', // Updated image
+                    title: 'Welcome to WasteSort AI',
+                    subtitle: 'Your personal AI-powered tool for smart waste classification. Help protect the planet using just your smartphone camera.',
                   ),
                   _OnboardingPage(
-                    imageAsset: 'asset/images/img_1.png',
-                    title: 'Instant, Private Analysis',
-                    subtitle: 'Capture a clear image of your lower eyelid (conjunctiva) to get a confidential, AI-driven assessment in moments.',
+                    imageAsset: 'asset/images/c.jpg', // Updated image
+                    title: 'Instant Waste Analysis',
+                    subtitle: 'Capture a clear image of any waste item to instantly identify if it is biodegradable, non-biodegradable, or recyclable.',
                   ),
                   _OnboardingPage(
-                    imageAsset: 'asset/images/img_2.png',
-                    title: 'Track Your Health Insights',
-                    subtitle: 'Monitor your screening results over time with our analytics dashboard to observe trends and stay informed.',
+                    imageAsset: 'asset/images/d.jpg', // Updated image
+                    title: 'Track Your Impact',
+                    subtitle: 'Monitor your sorting habits over time with our analytics dashboard. Stay informed and observe your contribution to a cleaner environment.',
                   ),
                 ],
               ),
@@ -58,7 +59,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           onPressed: () {
                             Navigator.of(context).pushReplacementNamed(AppRoutes.login);
                           },
-                          child: const Text('Skip'),
+                          child: const Text('Skip', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
                         )
                       else
                         const SizedBox(width: 60),
@@ -76,8 +77,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         },
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        child: Text(_currentPage == 2 ? 'Get Started' : 'Next'),
+                        child: Text(_currentPage == 2 ? 'Get Started' : 'Next', style: const TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
@@ -123,38 +126,39 @@ class _OnboardingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
+            width: 240,
+            height: 240,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
+              color: const Color(0xFFF1F8E9),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  blurRadius: 30,
+                  offset: const Offset(0, 15),
                 ),
               ],
             ),
-            child: CircleAvatar(
-              radius: 120,
-              backgroundColor: Colors.grey.shade100,
-              backgroundImage: AssetImage(imageAsset),
+            child: ClipOval(
+              child: Image.asset(imageAsset, fit: BoxFit.cover),
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 60),
           Text(
             title,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: -0.5),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey.shade600, height: 1.5),
+            style: const TextStyle(color: Colors.black54, height: 1.6, fontSize: 16),
           ),
         ],
       ),

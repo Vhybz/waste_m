@@ -1,8 +1,7 @@
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
-import 'package:flutter/gestures.dart';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -16,11 +15,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final supabase = Supabase.instance.client;
   bool _isLoading = false;
 
-  // State for password visibility
   bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
 
-  // Text editing controllers
   final _firstNameController = TextEditingController();
   final _surnameController = TextEditingController();
   final _dobController = TextEditingController();
@@ -30,7 +26,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _confirmPasswordController = TextEditingController();
   final _otherProfessionController = TextEditingController();
 
-  // Dropdown values
   String? _selectedGender;
   String? _selectedProfession;
 
@@ -51,7 +46,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Create Auth user in Supabase
       final response = await supabase.auth.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -60,7 +54,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final user = response.user;
 
       if (user != null) {
-        // 2. Insert profile details into 'profiles' table
         await supabase.from('profiles').insert({
           'id': user.id,
           'firstname': _firstNameController.text.trim(),
@@ -76,40 +69,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
 
         if (mounted) {
-          // Success Message
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Registration successful! Please check your email to confirm your account before logging in.'),
+              content: Text('Registration successful! Please confirm your email before logging in.'),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 5),
             ),
           );
-          
-          // Send back to Login Page
           Navigator.of(context).pop();
         }
       }
     } on AuthException catch (e) {
       _showErrorSnackBar(e.message);
     } catch (e) {
-      _showErrorSnackBar("An unexpected error occurred: $e");
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
-  Future<void> _socialSignUp(OAuthProvider provider) async {
-    setState(() => _isLoading = true);
-    try {
-      await supabase.auth.signInWithOAuth(
-        provider,
-        redirectTo: 'com.example.cjt_scan://login-callback/',
-      );
-    } on AuthException catch (e) {
-      _showErrorSnackBar(e.message);
-    } catch (e) {
-      _showErrorSnackBar('Could not sign up with ${provider.name}.');
+      _showErrorSnackBar("An unexpected error occurred.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -145,10 +118,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: const Text('Create Account', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
@@ -157,32 +132,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 16),
               Text(
-                'Join CJT Scan to start your wellness journey.',
+                'Join WasteSort AI to start your sorting journey.',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.grey.shade600,
-                    ),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
               ),
               const SizedBox(height: 32),
 
               _buildTextField(
                 controller: _firstNameController,
                 label: 'First Name',
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'First name is required';
-                  return null;
-                },
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _surnameController,
                 label: 'Surname',
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Surname is required';
-                  return null;
-                },
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
@@ -191,7 +157,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 readOnly: true,
                 onTap: () => _selectDate(context),
                 suffix: const Icon(Icons.calendar_today),
-                validator: (value) => (value == null || value.isEmpty) ? 'Date of Birth is required' : null,
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               _buildDropdownField(
@@ -199,28 +165,31 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 label: 'Gender',
                 items: ['Male', 'Female', 'Other'],
                 onChanged: (value) => setState(() => _selectedGender = value),
-                validator: (value) => value == null ? 'Please select a gender' : null,
+                validator: (value) => value == null ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               _buildDropdownField(
                 value: _selectedProfession,
-                label: 'Profession',
-                items: ['Nurse', 'Doctor', 'Lab Technician', 'Other'],
+                label: 'Occupation',
+                items: [
+                  'Environmental Engineer', 
+                  'Sustainability Consultant', 
+                  'Waste Management Officer', 
+                  'Recycling Coordinator', 
+                  'Data Scientist', 
+                  'Student', 
+                  'Other'
+                ],
                 onChanged: (value) => setState(() => _selectedProfession = value),
-                validator: (value) => value == null ? 'Please select a profession' : null,
+                validator: (value) => value == null ? 'Required' : null,
               ),
               if (_selectedProfession == 'Other')
                 Padding(
                   padding: const EdgeInsets.only(top: 20.0),
                   child: _buildTextField(
                     controller: _otherProfessionController,
-                    label: 'Please Specify Profession',
-                    validator: (value) {
-                      if (_selectedProfession == 'Other' && (value == null || value.isEmpty)) {
-                        return 'Please specify your profession';
-                      }
-                      return null;
-                    },
+                    label: 'Please Specify Occupation',
+                    validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
                   ),
                 ),
               const SizedBox(height: 20),
@@ -228,21 +197,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: _phoneController,
                 label: 'Phone Number',
                 keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Phone number is required';
-                  return null;
-                },
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _emailController,
                 label: 'Email Address',
                 keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Email is required';
-                  if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) return 'Enter a valid email';
-                  return null;
-                },
+                validator: (value) => (value == null || value.isEmpty) ? 'Required' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
@@ -253,86 +215,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Password is required';
-                  if (value.length < 6) return 'Password must be at least 6 characters';
-                  return null;
-                },
+                validator: (value) => (value == null || value.length < 6) ? 'Min 6 characters' : null,
               ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _confirmPasswordController,
-                label: 'Confirm Password',
-                obscureText: _obscureConfirmPassword,
-                suffix: IconButton(
-                  icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please confirm your password';
-                  if (value != _passwordController.text) return 'Passwords do not match';
-                  return null;
-                },
-              ),
-
               const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _isLoading ? null : _signUp,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: _isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              FilledButton(
+                onPressed: _isLoading ? null : _signUp,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-              ),
-              const SizedBox(height: 32),
-              
-              // Divider
-              const Row(
-                children: [
-                  Expanded(child: Divider()),
-                  Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('OR', style: TextStyle(color: Colors.grey))),
-                  Expanded(child: Divider()),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-              
-              // Social Buttons - Only Google
-              SizedBox(
-                width: double.infinity,
-                child: _buildSocialButton(
-                  onPressed: () => _socialSignUp(OAuthProvider.google),
-                  icon: Icons.g_mobiledata,
-                  label: 'Sign up with Google',
-                ),
-              ),
-              
-              const SizedBox(height: 40),
-              Center(
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
-                    children: [
-                      const TextSpan(text: "Don't have an account? "),
-                      TextSpan(
-                        text: 'Sign In',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () => Navigator.of(context).pop(),
-                      ),
-                    ],
-                  ),
-                ),
+                child: _isLoading 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('Sign Up', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
               const SizedBox(height: 40),
             ],
@@ -342,15 +237,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  TextFormField _buildTextField({
-    required TextEditingController controller,
-    required String label,
+  Widget _buildTextField({
+    required TextEditingController controller, 
+    required String label, 
     String? Function(String?)? validator,
-    bool obscureText = false,
-    bool readOnly = false,
-    VoidCallback? onTap,
-    TextInputType? keyboardType,
-    Widget? suffix,
+    bool obscureText = false, 
+    bool readOnly = false, 
+    VoidCallback? onTap, 
+    TextInputType? keyboardType, 
+    Widget? suffix
   }) {
     return TextFormField(
       controller: controller,
@@ -365,30 +260,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
         filled: true,
         fillColor: Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
       ),
     );
   }
 
-  DropdownButtonFormField<T> _buildDropdownField<T>({
-    required T? value,
-    required String label,
-    required List<T> items,
-    required void Function(T?) onChanged,
-    String? Function(T?)? validator,
-  }) {
-    return DropdownButtonFormField<T>(
+  Widget _buildDropdownField({required String? value, required String label, required List<String> items, required void Function(String?) onChanged, String? Function(String?)? validator}) {
+    return DropdownButtonFormField<String>(
       value: value,
       validator: validator,
       decoration: InputDecoration(
@@ -396,44 +276,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         filled: true,
         fillColor: Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
       ),
-      items: items.map<DropdownMenuItem<T>>((T value) {
-        return DropdownMenuItem<T>(
-          value: value,
-          child: Text(value.toString()),
-        );
-      }).toList(),
+      items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
       onChanged: onChanged,
-    );
-  }
-
-  Widget _buildSocialButton({
-    required VoidCallback onPressed,
-    required IconData icon,
-    required String label,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 24),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: Colors.grey.shade300),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        foregroundColor: Colors.black87,
-      ),
     );
   }
 }

@@ -1,9 +1,9 @@
 
-import 'package:cjt_scan/models/scan_result.dart';
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waste_sort_ai/models/scan_result.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -54,8 +54,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
       _selectedFilter = filter;
       if (filter == 'All') {
         _filteredScans = _allScans;
-      } else if (filter == 'Flagged') {
-        _filteredScans = _allScans.where((s) => s.status != AnemiaStatus.normal).toList();
       } else {
         _filteredScans = _allScans.where((s) => s.status.text == filter).toList();
       }
@@ -65,10 +63,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Future<void> _deleteScan(String id) async {
     try {
       await supabase.from('scans').delete().eq('id', id);
-      _fetchHistory(); // Refresh
+      _fetchHistory();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Scan record deleted')),
+          const SnackBar(content: Text('Record deleted')),
         );
       }
     } catch (e) {
@@ -79,9 +77,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Scan History', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Classification History', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -92,7 +90,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           _buildFilterBar(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
                 : _filteredScans.isEmpty
                     ? _buildEmptyState()
                     : RefreshIndicator(
@@ -115,7 +113,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildFilterBar() {
-    final filters = ['All', 'Normal', 'Flagged', 'Mild', 'Moderate', 'Severe'];
+    final filters = ['All', 'Biodegradable', 'Non-Biodegradable', 'Recyclable'];
     return Container(
       height: 60,
       color: Colors.white,
@@ -156,15 +154,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             style: TextStyle(color: Colors.grey.shade600, fontSize: 18, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          Text(
-            'Start a new scan to see your records here.',
-            style: TextStyle(color: Colors.grey.shade400),
-          ),
+          const Text('Start a new classification to see results here.', style: TextStyle(color: Colors.grey)),
           const SizedBox(height: 24),
           FilledButton.icon(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.capture),
             icon: const Icon(Icons.add_a_photo_rounded),
-            label: const Text('New Scan'),
+            label: const Text('New Classification'),
           )
         ],
       ),
@@ -201,7 +196,7 @@ class _HistoryCard extends StatelessWidget {
                   color: result.statusColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.analytics_rounded, color: result.statusColor),
+                child: Icon(Icons.recycling_rounded, color: result.statusColor),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -232,7 +227,7 @@ class _HistoryCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${result.confidence.toInt()}% Acc.',
+                    '${result.confidence.toInt()}% Conf.',
                     style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
                   ),
                 ],

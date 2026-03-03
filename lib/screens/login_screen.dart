@@ -1,10 +1,10 @@
 
 import 'dart:async';
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,11 +26,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Listen for auth state changes to handle OAuth (Google) redirection
     _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null && mounted) {
-        // User is signed in (e.g., via Google), redirect to Home
         Navigator.of(context).pushReplacementNamed(AppRoutes.home);
       }
     });
@@ -70,8 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await supabase.auth.signInWithOAuth(
         provider,
-        // Using the standard fallback scheme for highest compatibility
-        redirectTo: 'io.supabase.flutter://login-callback',
+        redirectTo: 'io.supabase.flutter://login-callback/',
       );
     } on AuthException catch (e) {
       _showErrorSnackBar(e.message);
@@ -93,6 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -103,23 +101,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset('asset/images/img_2.png', height: 100),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Welcome Back',
+                  Image.asset('asset/images/a.jpg', height: 120),
+                  const SizedBox(height: 32),
+                  const Text(
+                    'WasteSort AI',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Log in to access your screening dashboard.',
+                    'Log in to your environmental dashboard.',
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey.shade600,
-                        ),
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 15),
                   ),
                   const SizedBox(height: 48),
                   
@@ -145,10 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {
-                        // Password reset logic
-                      },
-                      child: const Text('Forgot Password?'),
+                      onPressed: () {},
+                      child: const Text('Forgot Password?', style: TextStyle(color: AppColors.primary)),
                     ),
                   ),
                   
@@ -178,13 +169,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   
                   const SizedBox(height: 32),
                   
-                  // Social Login - Only Google
-                  SizedBox(
-                    width: double.infinity,
-                    child: _buildSocialButton(
-                      onPressed: () => _socialSignIn(OAuthProvider.google),
-                      icon: Icons.g_mobiledata,
-                      label: 'Sign in with Google',
+                  // Google Sign-In Button
+                  OutlinedButton.icon(
+                    onPressed: () => _socialSignIn(OAuthProvider.google),
+                    icon: const Icon(Icons.login_rounded, size: 24),
+                    label: const Text('Sign in with Google'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(color: Colors.grey.shade300),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      foregroundColor: Colors.black87,
                     ),
                   ),
                   
@@ -237,36 +231,9 @@ class _LoginScreenState extends State<LoginScreen> {
         filled: true,
         fillColor: Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required VoidCallback onPressed,
-    required IconData icon,
-    required String label,
-  }) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      icon: Icon(icon, size: 24),
-      label: Text(label),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        side: BorderSide(color: Colors.grey.shade300),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        foregroundColor: Colors.black87,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: Colors.grey.shade300)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
       ),
     );
   }

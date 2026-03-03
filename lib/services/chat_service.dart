@@ -26,17 +26,20 @@ class ChatService {
       final String? apiKey = response?['value'];
       if (apiKey == null || apiKey.isEmpty) throw Exception("CONFIG_ERROR");
 
-      // Use the explicit model name that Google AI Studio expects
       _model = GenerativeModel(
-        model: 'gemini-1.5-flash', 
+        model: 'gemini-1.5-flash',
         apiKey: apiKey,
       );
 
       _chat = _model!.startChat(history: [
         Content.text(
-          "You are an AI Health Assistant inside a mobile Anemia Screening App. "
-          "IMPORTANT: You are NOT a doctor. You NEVER diagnose. Only laboratory blood tests diagnose anemia. "
-          "Respond professionally and prioritize user safety."
+          "You are a Waste Management and Recycling Expert Assistant inside the WasteSort AI app. "
+          "Your purpose is to provide educational information about waste classification, recycling practices, and sustainability. "
+          "RULES: "
+          "1. Provide clear guidance on whether items are biodegradable, non-biodegradable, or recyclable. "
+          "2. Offer practical tips for reducing waste and composting. "
+          "3. If unsure about a specific local recycling rule, advise the user to check with their local municipality. "
+          "4. Maintain an encouraging and eco-conscious tone."
         ),
       ]);
 
@@ -68,20 +71,15 @@ class ChatService {
 
       String errorMsg = e.toString();
 
-      // Displaying more specific errors to help you debug
-      if (errorMsg.contains('v1beta') || errorMsg.contains('not found')) {
-        return "AI Configuration Error: Google is reporting that this model ID is not found. Please ensure 'Generative Language API' is enabled in your Google Console.";
+      if (errorMsg.contains('not found') || errorMsg.contains('404')) {
+        return "AI Error: The assistant model is currently being updated. We will be back online shortly.";
       }
 
       if (kIsWeb && errorMsg.contains('TypeError')) {
         return "Web Security Block: Chrome is blocking the AI. Please run with '--disable-web-security'.";
       }
 
-      if (errorMsg.contains('403')) {
-        return "Access Denied: The API key in Supabase may be incorrect or restricted.";
-      }
-
-      return "Assistant Error: ${errorMsg.split(':').last.trim()}";
+      return "Assistant is currently offline. Please check your internet connection.";
     }
   }
 }

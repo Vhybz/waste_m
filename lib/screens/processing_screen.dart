@@ -1,10 +1,11 @@
 
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:cjt_scan/services/api_service.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
-import 'package:cjt_scan/models/scan_result.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waste_sort_ai/services/tflite_service.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
+import 'package:waste_sort_ai/models/scan_result.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 
 class ProcessingScreen extends StatefulWidget {
   const ProcessingScreen({super.key});
@@ -14,7 +15,7 @@ class ProcessingScreen extends StatefulWidget {
 }
 
 class _ProcessingScreenState extends State<ProcessingScreen> {
-  final ApiService _apiService = ApiService();
+  final TfliteService _tfliteService = TfliteService();
   final supabase = Supabase.instance.client;
   bool _isAnalyzing = false;
 
@@ -34,22 +35,28 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
   Future<void> _analyzeAndSave(File imageFile) async {
     try {
-      // 1. Get Prediction from API
-      final result = await _apiService.scanImage(imageFile);
+      final predictionData = await _tfliteService.classifyWaste(imageFile);
+      
+      final result = ScanResult(
+        id: UniqueKey().toString(),
+        name: 'Waste Item ${DateTime.now().hour}:${DateTime.now().minute}',
+        status: _mapStatus(predictionData['prediction']),
+        confidence: predictionData['confidence'],
+        date: DateTime.now(),
+        imagePath: imageFile.path,
+      );
 
-      // 2. Save to Supabase 'scans' table
       final user = supabase.auth.currentUser;
       if (user != null) {
         await supabase.from('scans').insert({
           'user_id': user.id,
-          'name': 'Scan ${DateTime.now().hour}:${DateTime.now().minute}', // Default name
-          'prediction': result.status.text,
+          'name': result.name,
+          'prediction': result.statusText,
           'confidence': result.confidence,
           'created_at': DateTime.now().toIso8601String(),
         });
       }
 
-      // 3. Navigate to Results
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(
           AppRoutes.results,
@@ -57,8 +64,15 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         );
       }
     } catch (e) {
-      _showErrorAndPop('Analysis Failed: ${e.toString()}');
+      debugPrint('Classification Error: $e');
+      _showErrorAndPop('Classification Failed: ${e.toString()}');
     }
+  }
+
+  WasteStatus _mapStatus(String prediction) {
+    if (prediction == 'biodegradable') return WasteStatus.biodegradable;
+    if (prediction == 'non-biodegradable') return WasteStatus.nonBiodegradable;
+    return WasteStatus.unknown;
   }
 
   void _showErrorAndPop(String message) {
@@ -72,26 +86,30 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 24),
-            Text(
-              'Analyzing conjunctiva...',
+            const CircularProgressIndicator(color: AppColors.primary),
+            const SizedBox(height: 32),
+            const Text(
+              'Classifying waste...',
               style: TextStyle(
-                fontSize: 18,
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
+                fontSize: 20,
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
-            Text(
-              'Saving to your secure health record',
-              style: TextStyle(color: Colors.grey, fontSize: 14),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(
+                'Our AI is analyzing the material type for proper sorting.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14, height: 1.5),
+              ),
             ),
           ],
         ),

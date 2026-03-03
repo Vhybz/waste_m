@@ -32,12 +32,12 @@ class AuthService {
   }
 
   /// Sign in with Google (OAuth)
-  /// Note: Requires Google Client IDs configured in Supabase dashboard
+  /// Updated redirect to match WasteSort AI package name
   Future<void> signInWithGoogle() async {
     try {
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'com.example.cjt_scan://login-callback/',
+        redirectTo: 'io.supabase.flutter://login-callback/',
       );
     } on AuthException {
       rethrow;

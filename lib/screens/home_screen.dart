@@ -1,9 +1,9 @@
 
-import 'package:cjt_scan/models/scan_result.dart';
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:waste_sort_ai/models/scan_result.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -98,19 +98,19 @@ class _HomeScreenState extends State<HomeScreen> {
     final bool isEmailVerified = user?.emailConfirmedAt != null;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFBFBFE),
+      backgroundColor: AppColors.surface,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(110),
         child: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+              colors: [AppColors.primary, AppColors.primaryLight],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF7E57C2).withValues(alpha: 0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -178,7 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (!isEmailVerified) _buildVerificationBanner(user?.email),
               
               const Text(
-                'Health Overview',
+                'Waste Overview',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
               ),
               const SizedBox(height: 16),
@@ -193,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Recent Screening',
+                    'Recent Classification',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   if (_lastScan != null)
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onPressed: () => Navigator.pushNamed(context, AppRoutes.chat),
         backgroundColor: AppColors.primary,
         elevation: 4,
-        child: const Icon(Icons.support_agent_rounded, size: 32, color: Colors.white),
+        child: const Icon(Icons.psychology_alt_rounded, size: 32, color: Colors.white),
       ),
     );
   }
@@ -271,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
                 ),
                 Text(
-                  'Protect your screening history.',
+                  'Protect your classification history.',
                   style: TextStyle(fontSize: 12, color: Colors.orange.shade800),
                 ),
               ],
@@ -305,14 +305,14 @@ class _HeroScanButton extends StatelessWidget {
       constraints: const BoxConstraints(minHeight: 160),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
+          colors: [AppColors.primary, AppColors.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF5E35B1).withValues(alpha: 0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           )
@@ -330,7 +330,7 @@ class _HeroScanButton extends StatelessWidget {
                 Positioned(
                   right: -20,
                   bottom: -20,
-                  child: Icon(Icons.camera_alt, size: 120, color: Colors.white.withValues(alpha: 0.1)),
+                  child: Icon(Icons.delete_outline_rounded, size: 120, color: Colors.white.withValues(alpha: 0.1)),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(24.0),
@@ -340,12 +340,12 @@ class _HeroScanButton extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Instant Screening',
+                        'Classify Waste',
                         style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'AI conjunctiva scan analysis',
+                        'Instant AI sorting analysis',
                         style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 24),
@@ -356,8 +356,8 @@ class _HeroScanButton extends StatelessWidget {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Text(
-                          'Start Screening',
-                          style: TextStyle(color: Color(0xFF5E35B1), fontWeight: FontWeight.bold),
+                          'Start Sorting',
+                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -389,15 +389,15 @@ class _LastScanCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(Icons.analytics_outlined, size: 48, color: Colors.grey.shade300),
+            Icon(Icons.auto_awesome_outlined, size: 48, color: Colors.grey.shade300),
             const SizedBox(height: 12),
             Text(
-              'No screenings yet',
+              'No classifications yet',
               style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
-              'Your scan results will appear here.',
+              'Your classification history will appear here.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey.shade400, fontSize: 13),
             ),
@@ -425,7 +425,7 @@ class _LastScanCard extends StatelessWidget {
               color: scanResult!.statusColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(18),
             ),
-            child: Icon(Icons.assignment_turned_in_rounded, color: scanResult!.statusColor, size: 28),
+            child: Icon(Icons.recycling_rounded, color: scanResult!.statusColor, size: 28),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -466,7 +466,7 @@ class _LastScanCard extends StatelessWidget {
               children: [
                 Text(
                   '${scanResult!.confidence.toInt()}%',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF5E35B1)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.primary),
                 ),
                 const Text('Accuracy', style: TextStyle(color: Colors.grey, fontSize: 10)),
               ],
@@ -486,21 +486,21 @@ class _InfoBanner extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3E5F5),
+        color: const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.tips_and_updates_rounded, color: Color(0xFF5E35B1), size: 32),
+          const Icon(Icons.eco_rounded, color: AppColors.primary, size: 32),
           const SizedBox(height: 12),
           const Text(
-            'Clinical Health Tip',
+            'Eco Tip',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87),
           ),
           const SizedBox(height: 8),
           Text(
-            'Regular screening helps detect potential iron deficiency early. Maintain a diet rich in iron and vitamin C.',
+            'Properly sorting your waste reduces landfill volume and helps protect our planet. Every item counts!',
             style: TextStyle(color: Colors.grey.shade800, height: 1.5),
           ),
         ],
@@ -523,13 +523,12 @@ class AppDrawer extends StatelessWidget {
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(24))),
       child: Column(
         children: [
-          // Sidebar header with gradient
           Container(
             width: double.infinity,
             padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+                colors: [AppColors.primary, AppColors.primaryLight],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -561,21 +560,14 @@ class AppDrawer extends StatelessWidget {
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
-                // 1. PRIMARY TOOLS (High Importance)
-                _buildDrawerItem(context, Icons.support_agent_rounded, 'AI Health Assistant', AppRoutes.chat),
-                _buildDrawerItem(context, Icons.analytics_rounded, 'Health Analytics', AppRoutes.analytics),
-                _buildDrawerItem(context, Icons.history_rounded, 'Scan History', AppRoutes.history),
+                _buildDrawerItem(context, Icons.psychology_alt_rounded, 'AI Waste Assistant', AppRoutes.chat),
+                _buildDrawerItem(context, Icons.analytics_rounded, 'Sorting Analytics', AppRoutes.analytics),
+                _buildDrawerItem(context, Icons.history_rounded, 'Classification History', AppRoutes.history),
                 const Divider(indent: 20, endIndent: 20),
-                
-                // 2. CONFIGURATION (Medium Importance)
                 _buildDrawerItem(context, Icons.settings_rounded, 'Account Settings', AppRoutes.settings),
                 const Divider(indent: 20, endIndent: 20),
-                
-                // 3. INFORMATION (Last before Sign Out)
                 _buildDrawerItem(context, Icons.info_outline_rounded, 'About App & Author', AppRoutes.aboutApp),
                 _buildDrawerItem(context, Icons.verified_user_outlined, 'Safety Guidelines', AppRoutes.disclaimer),
-                
-                // 4. SESSION
                 const Divider(indent: 20, endIndent: 20),
                 ListTile(
                   leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
@@ -593,7 +585,7 @@ class AppDrawer extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              'AnemiaScan AI v1.0.0',
+              'WasteSort AI v1.0.0',
               style: TextStyle(color: Colors.grey.shade400, fontSize: 12),
             ),
           ),

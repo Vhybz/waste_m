@@ -1,9 +1,9 @@
 
-import 'package:cjt_scan/models/scan_result.dart';
-import 'package:cjt_scan/utils/app_colors.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:waste_sort_ai/models/scan_result.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -32,7 +32,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           .from('scans')
           .select()
           .eq('user_id', user.id)
-          .order('created_at', ascending: true); // Ascending for time trends
+          .order('created_at', ascending: true);
 
       if (mounted) {
         setState(() {
@@ -49,16 +49,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        title: const Text('Health Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Sorting Analytics', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: Colors.black,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _scans.isEmpty
               ? _buildEmptyState()
               : SingleChildScrollView(
@@ -68,11 +68,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     children: [
                       _buildSummaryStats(),
                       const SizedBox(height: 32),
-                      const Text('Result Distribution', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('Waste Distribution', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
                       const SizedBox(height: 16),
                       _buildPieChartCard(),
                       const SizedBox(height: 32),
-                      const Text('Confidence Trend', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const Text('Confidence Trend', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
                       const SizedBox(height: 16),
                       _buildLineChartCard(),
                       const SizedBox(height: 40),
@@ -83,22 +83,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _buildSummaryStats() {
-    final flaggedCount = _scans.where((s) => s.status != AnemiaStatus.normal).length;
     final avgConfidence = _scans.isEmpty 
         ? 0.0 
         : _scans.map((s) => s.confidence).reduce((a, b) => a + b) / _scans.length;
 
     return Row(
       children: [
-        _StatCard(title: 'Total Scans', value: '${_scans.length}', icon: Icons.assessment_outlined, color: AppColors.primary),
+        _StatCard(title: 'Total Classified', value: '${_scans.length}', icon: Icons.recycling_rounded, color: AppColors.primary),
         const SizedBox(width: 16),
-        _StatCard(title: 'Avg. Accuracy', value: '${avgConfidence.toInt()}%', icon: Icons.bolt_rounded, color: Colors.orange),
+        _StatCard(title: 'Avg. Confidence', value: '${avgConfidence.toInt()}%', icon: Icons.auto_awesome_rounded, color: Colors.orange),
       ],
     );
   }
 
   Widget _buildPieChartCard() {
-    final counts = <AnemiaStatus, int>{};
+    final counts = <WasteStatus, int>{};
     for (var s in _scans) {
       counts[s.status] = (counts[s.status] ?? 0) + 1;
     }
@@ -161,7 +160,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Widget _buildEmptyState() {
     return Center(
-      child: Text('Not enough data for analytics.', style: TextStyle(color: Colors.grey.shade500)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.analytics_outlined, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text('No data recorded for analysis yet.', style: TextStyle(color: Colors.grey.shade500, fontSize: 16)),
+        ],
+      ),
     );
   }
 }
@@ -188,8 +194,8 @@ class _StatCard extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 12),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87)),
+            Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500)),
           ],
         ),
       ),

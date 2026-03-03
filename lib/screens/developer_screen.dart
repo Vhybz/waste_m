@@ -1,5 +1,5 @@
 
-import 'package:cjt_scan/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -35,7 +35,7 @@ class DeveloperScreen extends StatelessWidget {
                 children: [
                   _buildSectionTitle('Professional Profile'),
                   const Text(
-                    'I am a Data Scientist & Software Engineer dedicated to creating innovative health-tech solutions. My expertise lies in Flutter development, machine learning integration, and secure cloud architecture.',
+                    'I am a Data Scientist & Software Engineer dedicated to creating innovative health-tech and environmental solutions. My expertise lies in Flutter development, machine learning integration, and secure cloud architecture.',
                     style: TextStyle(fontSize: 15, color: Colors.black87, height: 1.6, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 32),
@@ -88,14 +88,13 @@ class DeveloperScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 48),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF7E57C2), Color(0xFF9575CD)],
+          colors: [AppColors.primary, AppColors.primaryLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: Column(
         children: [
-          // Square Profile Image
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -105,19 +104,16 @@ class DeveloperScreen extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.asset(
-                'asset/images/pp.jpg', // VERIFIED ASSET PATH
+                'asset/images/pp.jpg',
                 width: 110,
                 height: 110,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // Fallback for web asset loading issues
-                  return Container(
-                    width: 110,
-                    height: 110,
-                    color: Colors.white,
-                    child: const Icon(Icons.person_rounded, size: 50, color: Color(0xFF7E57C2)),
-                  );
-                },
+                errorBuilder: (context, error, stackTrace) => Container(
+                  width: 110,
+                  height: 110,
+                  color: Colors.white,
+                  child: const Icon(Icons.person_rounded, size: 50, color: AppColors.primary),
+                ),
               ),
             ),
           ),
@@ -191,7 +187,7 @@ class DeveloperScreen extends StatelessWidget {
         _buildSocialButton(
           icon: Icons.link_rounded,
           label: 'LinkedIn',
-          onTap: () => _launchURL('https://www.linkedin.com/in/kyeremeh-clifford-9690082b3?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app'),
+          onTap: () => _launchURL('https://www.linkedin.com/in/kyeremeh-clifford-9690082b3'),
         ),
         _buildSocialButton(
           icon: Icons.facebook_rounded,

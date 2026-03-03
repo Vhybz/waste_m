@@ -1,11 +1,11 @@
-name: cjt_scan
-description: "A premium AI-powered medical screening app for Anemia detection."
+name: waste_sort_ai
+description: "A premium AI-powered waste classification and recycling assistant."
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.7.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0' # Updated to match standard Flutter 3.29 requirements
 
 dependencies:
   flutter:
@@ -17,9 +17,11 @@ dependencies:
   url_launcher: ^6.3.1
   fl_chart: ^0.68.0
   image_picker: ^1.1.2
+  image: ^4.3.0
 
-  # AI - UPDATED TO LATEST STABLE
-  google_generative_ai: ^0.4.7
+  # AI & Machine Learning
+  google_generative_ai: ^0.4.0
+  tflite_flutter: ^0.10.4
 
   # Backend
   supabase_flutter: ^2.6.0
@@ -31,14 +33,15 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
 
+# ICON CONFIGURATION
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "asset/images/img_2.png"
+  image_path: "asset/images/a.jpg"
   min_sdk_android: 21
 
 flutter:
   uses-material-design: true
   assets:
     - asset/images/
-    - asset/images/pp.jpg
+    - asset/model/

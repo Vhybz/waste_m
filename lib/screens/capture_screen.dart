@@ -1,8 +1,8 @@
 
 import 'dart:io';
 import 'dart:ui';
-import 'package:cjt_scan/utils/app_routes.dart';
-import 'package:cjt_scan/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -48,7 +48,7 @@ class _CaptureScreenState extends State<CaptureScreen> with SingleTickerProvider
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Could not select image: ${e.toString()}'),
+            content: Text('Selection failed: ${e.toString()}'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: Colors.redAccent,
           ),
@@ -63,29 +63,17 @@ class _CaptureScreenState extends State<CaptureScreen> with SingleTickerProvider
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Scan Conjunctiva', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Waste Classification', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        automaticallyImplyLeading: true,
       ),
       body: Stack(
         children: [
-          // 1. The Camera Area (Placeholder)
           const Positioned.fill(child: _CameraBackground()),
-
-          // 2. The Active Scanning Guide
-          _AnimatedScanningGuide(pulseController: _pulseController),
-
-          // 3. Lighting/Positioning Hints
-          const Positioned(
-            top: 120,
-            left: 0,
-            right: 0,
-            child: _ScanningHints(),
-          ),
-
-          // 4. The Premium Bottom Control Panel
+          _SquareScanningGuide(pulseController: _pulseController),
+          const Positioned(top: 120, left: 0, right: 0, child: _ScanningHints()),
           Align(
             alignment: Alignment.bottomCenter,
             child: _BeautifiedControlPanel(
@@ -104,19 +92,17 @@ class _CameraBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.black,
-      ),
+      decoration: const BoxDecoration(color: Colors.black),
       child: Center(
-        child: Icon(Icons.camera_alt_rounded, size: 100, color: Colors.white.withValues(alpha: 0.05)),
+        child: Icon(Icons.qr_code_scanner_rounded, size: 80, color: Colors.white.withValues(alpha: 0.05)),
       ),
     );
   }
 }
 
-class _AnimatedScanningGuide extends StatelessWidget {
+class _SquareScanningGuide extends StatelessWidget {
   final AnimationController pulseController;
-  const _AnimatedScanningGuide({required this.pulseController});
+  const _SquareScanningGuide({required this.pulseController});
 
   @override
   Widget build(BuildContext context) {
@@ -124,32 +110,33 @@ class _AnimatedScanningGuide extends StatelessWidget {
       child: AnimatedBuilder(
         animation: pulseController,
         builder: (context, child) {
+          double size = 260 + (15 * pulseController.value);
           return Container(
-            width: 280 + (10 * pulseController.value),
-            height: 280 + (10 * pulseController.value),
+            width: size,
+            height: size,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3 + (0.4 * pulseController.value)),
+                color: AppColors.primaryLight.withValues(alpha: 0.3 + (0.4 * pulseController.value)),
                 width: 2,
               ),
             ),
             child: Center(
               child: Container(
-                width: 240,
-                height: 240,
+                width: 220,
+                height: 220,
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.primary, width: 4),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: 0.2 * pulseController.value),
-                      blurRadius: 20,
-                      spreadRadius: 5,
+                      blurRadius: 30,
+                      spreadRadius: 2,
                     )
                   ],
                 ),
-                child: const Icon(Icons.add, color: Colors.white24, size: 40),
+                child: Icon(Icons.add_rounded, color: Colors.white.withValues(alpha: 0.2), size: 40),
               ),
             ),
           );
@@ -163,25 +150,23 @@ class _ScanningHints extends StatelessWidget {
   const _ScanningHints();
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white10),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.wb_sunny_rounded, color: Colors.amber, size: 16),
-              SizedBox(width: 8),
-              Text('Good lighting detected', style: TextStyle(color: Colors.white70, fontSize: 12)),
-            ],
-          ),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white10),
         ),
-      ],
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 16),
+            SizedBox(width: 8),
+            Text('AI Ready: Align item in center', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -195,7 +180,7 @@ class _BeautifiedControlPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
           padding: const EdgeInsets.fromLTRB(32, 32, 32, 48),
           decoration: BoxDecoration(
@@ -214,19 +199,19 @@ class _BeautifiedControlPanel extends StatelessWidget {
                 decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
               ),
               const SizedBox(height: 24),
-              const Text('Capture Scan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
+              const Text('Classify Waste', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: -0.5)),
               const SizedBox(height: 12),
-              Text(
-                'Pull down your lower eyelid and align it within the circular guide for the best result.',
+              const Text(
+                'Place the item within the frame. Ensure good lighting for the most accurate classification.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey.shade600, height: 1.5, fontSize: 15),
+                style: TextStyle(color: Colors.black54, height: 1.5, fontSize: 15),
               ),
               const SizedBox(height: 32),
               Row(
                 children: [
                   _PanelButton(
                     onTap: onGalleryTap,
-                    icon: Icons.photo_library_outlined,
+                    icon: Icons.photo_library_rounded,
                     label: 'Gallery',
                     isPrimary: false,
                   ),
@@ -234,7 +219,7 @@ class _BeautifiedControlPanel extends StatelessWidget {
                   _PanelButton(
                     onTap: onCameraTap,
                     icon: Icons.camera_alt_rounded,
-                    label: 'Capture',
+                    label: 'Classify',
                     isPrimary: true,
                   ),
                 ],
@@ -267,7 +252,7 @@ class _PanelButton extends StatelessWidget {
             color: isPrimary ? AppColors.primary : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(20),
             boxShadow: isPrimary ? [
-              BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 12, offset: const Offset(0, 6))
+              BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))
             ] : [],
           ),
           child: Row(

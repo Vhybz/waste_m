@@ -1,6 +1,7 @@
 
-import 'package:cjt_scan/utils/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:waste_sort_ai/utils/app_routes.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 
 class DisclaimerScreen extends StatelessWidget {
   const DisclaimerScreen({super.key});
@@ -8,7 +9,14 @@ class DisclaimerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Disclaimer')),
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(
+        title: const Text('Safety & Usage', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        foregroundColor: Colors.black,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -17,24 +25,46 @@ class DisclaimerScreen extends StatelessWidget {
             children: [
               const Spacer(),
               Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                  side: BorderSide(color: AppColors.primary.withValues(alpha: 0.1)),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(32.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.gavel_rounded, color: AppColors.primary),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Usage Disclaimer',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       Text(
-                        'Clinical Disclaimer',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        'WasteSort AI is designed for informational and educational purposes to assist in waste classification. While our AI strive for high accuracy, it is not infallible. Always follow your local municipality\'s recycling and waste disposal regulations.',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          height: 1.6,
+                          fontSize: 15,
+                        ),
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        'cjt scan is intended for informational and screening purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey.shade700,
-                              height: 1.5,
-                            ),
+                      const Text(
+                        'Handle waste items with care, especially potentially hazardous or sharp materials.',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -45,9 +75,14 @@ class DisclaimerScreen extends StatelessWidget {
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () {
-                    Navigator.of(context).pushReplacementNamed(AppRoutes.capture);
+                    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
                   },
-                  child: const Text('I Understand & Continue'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: const Text('I Understand & Continue', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ],

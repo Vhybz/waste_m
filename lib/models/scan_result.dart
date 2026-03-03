@@ -1,38 +1,34 @@
-import 'package:cjt_scan/utils/app_colors.dart';
+
 import 'package:flutter/material.dart';
 
-enum AnemiaStatus { normal, mild, moderate, severe, unknown, invalid }
+enum WasteStatus { biodegradable, nonBiodegradable, recyclable, unknown, invalid }
 
-extension AnemiaStatusExtension on AnemiaStatus {
+extension WasteStatusExtension on WasteStatus {
   Color get color {
     switch (this) {
-      case AnemiaStatus.normal:
-        return AppColors.normal;
-      case AnemiaStatus.mild:
-        return AppColors.mild;
-      case AnemiaStatus.moderate:
-        return AppColors.moderate;
-      case AnemiaStatus.severe:
-        return AppColors.severe;
-      case AnemiaStatus.unknown:
-      case AnemiaStatus.invalid:
-        return Colors.grey.shade300;
+      case WasteStatus.biodegradable:
+        return Colors.green.shade600; // Earthy green
+      case WasteStatus.nonBiodegradable:
+        return Colors.red.shade600; // Alert red
+      case WasteStatus.recyclable:
+        return Colors.blue.shade600; // Industrial blue
+      case WasteStatus.unknown:
+      case WasteStatus.invalid:
+        return Colors.grey.shade400;
     }
   }
 
   String get text {
     switch (this) {
-      case AnemiaStatus.normal:
-        return 'Normal';
-      case AnemiaStatus.mild:
-        return 'Mild Anemia';
-      case AnemiaStatus.moderate:
-        return 'Moderate Anemia';
-      case AnemiaStatus.severe:
-        return 'Severe Anemia';
-      case AnemiaStatus.unknown:
+      case WasteStatus.biodegradable:
+        return 'Biodegradable';
+      case WasteStatus.nonBiodegradable:
+        return 'Non-Biodegradable';
+      case WasteStatus.recyclable:
+        return 'Recyclable';
+      case WasteStatus.unknown:
         return 'Unknown';
-      case AnemiaStatus.invalid:
+      case WasteStatus.invalid:
         return 'Invalid Image';
     }
   }
@@ -40,8 +36,8 @@ extension AnemiaStatusExtension on AnemiaStatus {
 
 class ScanResult {
   final String id;
-  final String name; // Added to store scan name
-  final AnemiaStatus status;
+  final String name;
+  final WasteStatus status;
   final double confidence;
   final DateTime date;
   final String? imagePath;
@@ -55,46 +51,37 @@ class ScanResult {
     this.imagePath,
   });
 
-  /// Factory constructor to create a ScanResult from a JSON object.
   factory ScanResult.fromJson(Map<String, dynamic> json, {String? imagePath}) {
-    final bool isValidEyelid = json['is_eyelid'] ?? true;
-    
-    if (!isValidEyelid) {
-      return ScanResult(
-        id: json['id']?.toString() ?? UniqueKey().toString(),
-        name: json['name'] ?? 'Unnamed Scan',
-        status: AnemiaStatus.invalid,
-        confidence: 0.0,
-        date: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
-        imagePath: imagePath ?? json['image_path'],
-      );
-    }
-
     final statusString = (json['prediction'] ?? json['status'])?.toLowerCase() ?? 'unknown';
-    AnemiaStatus status;
+    WasteStatus status;
+    
     switch (statusString) {
-      case 'normal':
-        status = AnemiaStatus.normal;
+      case 'biodegradable':
+      case 'organic':
+      case 'degradable':
+        status = WasteStatus.biodegradable;
         break;
-      case 'mild':
-        status = AnemiaStatus.mild;
+      case 'non-biodegradable':
+      case 'non-degradable':
+      case 'waste':
+        status = WasteStatus.nonBiodegradable;
         break;
-      case 'moderate':
-        status = AnemiaStatus.moderate;
-        break;
-      case 'severe':
-        status = AnemiaStatus.severe;
+      case 'recyclable':
+      case 'plastic':
+      case 'metal':
+      case 'glass':
+        status = WasteStatus.recyclable;
         break;
       case 'invalid':
-        status = AnemiaStatus.invalid;
+        status = WasteStatus.invalid;
         break;
       default:
-        status = AnemiaStatus.unknown;
+        status = WasteStatus.unknown;
     }
 
     return ScanResult(
       id: json['id']?.toString() ?? UniqueKey().toString(),
-      name: json['name'] ?? 'Unnamed Scan',
+      name: json['name'] ?? 'Unnamed Item',
       status: status,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
       date: json['created_at'] != null ? DateTime.parse(json['created_at']) : DateTime.now(),
@@ -103,23 +90,20 @@ class ScanResult {
   }
 
   String get statusText => status.text;
-
   Color get statusColor => status.color;
 
   String get recommendation {
     switch (status) {
-      case AnemiaStatus.normal:
-        return 'No signs of anemia detected. Maintain a healthy diet. This is not a medical diagnosis.';
-      case AnemiaStatus.mild:
-        return 'Potential signs of mild anemia detected. Consider consulting a healthcare professional for further evaluation.';
-      case AnemiaStatus.moderate:
-        return 'Signs of moderate anemia detected. It is highly recommended to consult a healthcare professional.';
-      case AnemiaStatus.severe:
-        return 'Strong indicators of severe anemia detected. Please seek immediate medical attention.';
-      case AnemiaStatus.unknown:
-        return 'The result could not be determined. Please try scanning again in a well-lit environment.';
-      case AnemiaStatus.invalid:
-        return 'The captured image does not appear to be an eyelid. Please import or capture a clear image of the lower eyelid (conjunctiva) for accurate screening.';
+      case WasteStatus.biodegradable:
+        return 'This item is organic and can be composted. Avoid mixing it with plastics to reduce environmental impact.';
+      case WasteStatus.nonBiodegradable:
+        return 'This item does not decompose naturally. Please dispose of it in a designated waste bin or check if it can be repurposed.';
+      case WasteStatus.recyclable:
+        return 'This item can be processed and reused. Please clean it and place it in the blue recycling bin.';
+      case WasteStatus.unknown:
+        return 'Classification unclear. Please ensure the item is clearly visible and try scanning again.';
+      case WasteStatus.invalid:
+        return 'The image provided is not clear or does not contain a recognizable waste item. Please retake the photo.';
     }
   }
 }

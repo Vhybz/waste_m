@@ -1,5 +1,5 @@
 
-import 'package:cjt_scan/utils/app_colors.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 
 const double kAppCornerRadius = 24.0;
@@ -11,10 +11,10 @@ class AppTheme {
     brightness: Brightness.light,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
-      surface: const Color(0xFFFBFBFE),
+      surface: const Color(0xFFF1F8E9), // Soft Mint
       brightness: Brightness.light,
     ),
-    scaffoldBackgroundColor: const Color(0xFFFBFBFE),
+    scaffoldBackgroundColor: const Color(0xFFF1F8E9),
     
     textTheme: const TextTheme(
       headlineMedium: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, letterSpacing: -0.5),
@@ -33,7 +33,7 @@ class AppTheme {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFFF5F6FA),
+      fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(kAppCornerRadius), borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kAppCornerRadius), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
@@ -63,12 +63,11 @@ class AppTheme {
     brightness: Brightness.dark,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
-      surface: const Color(0xFF121212), // Deep dark background
+      surface: const Color(0xFF1B241B), // Deep Dark Green background
       brightness: Brightness.dark,
     ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
+    scaffoldBackgroundColor: const Color(0xFF1B241B),
     
-    // ENSURING ALL TEXT IS WHITE/LIGHT
     textTheme: const TextTheme(
       headlineMedium: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -0.5),
       titleLarge: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
@@ -78,7 +77,7 @@ class AppTheme {
     ),
 
     appBarTheme: const AppBarTheme(
-      backgroundColor: Color(0xFF1E1E1E), // Slightly lighter dark for appbar
+      backgroundColor: Color(0xFF232D23), 
       elevation: 0,
       scrolledUnderElevation: 2,
       centerTitle: true,
@@ -88,7 +87,7 @@ class AppTheme {
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: const Color(0xFF2C2C2C), // Dark tonal input
+      fillColor: const Color(0xFF2C362C),
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(kAppCornerRadius), borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(kAppCornerRadius), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
@@ -98,7 +97,7 @@ class AppTheme {
 
     cardTheme: CardThemeData(
       elevation: 0,
-      color: const Color(0xFF1E1E1E), // Tonal surface for cards
+      color: const Color(0xFF232D23),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(kAppCornerRadius), side: BorderSide(color: Colors.white.withValues(alpha: 0.05))),
     ),
 

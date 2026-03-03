@@ -1,7 +1,7 @@
 
-import 'package:cjt_scan/services/chat_service.dart';
-import 'package:cjt_scan/utils/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:waste_sort_ai/services/chat_service.dart';
+import 'package:waste_sort_ai/utils/app_colors.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -17,7 +17,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Map<String, String>> _messages = [
     {
       'role': 'assistant',
-      'text': 'Hello! I am your AnemiaScan AI Assistant. I can provide information about anemia and screening. How can I help you today?'
+      'text': 'Hello! I am your WasteSort AI Assistant. I can help you identify if items are biodegradable or recyclable. How can I help you today?'
     }
   ];
   bool _isTyping = false;
@@ -60,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Health Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Waste Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -68,7 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          _buildSafetyWarning(),
+          _buildEcoWarning(),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -91,18 +91,18 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildSafetyWarning() {
+  Widget _buildEcoWarning() {
     return Container(
       width: double.infinity,
-      color: Colors.amber.shade50,
+      color: const Color(0xFFE8F5E9),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
+      child: const Row(
         children: [
-          Icon(Icons.info_outline_rounded, size: 18, color: Colors.amber.shade900),
-          const SizedBox(width: 10),
-          const Expanded(
+          Icon(Icons.eco_rounded, size: 18, color: Color(0xFF2E7D32)),
+          SizedBox(width: 10),
+          Expanded(
             child: Text(
-              'Assistant is an AI, not a doctor. Only blood tests diagnose anemia.',
+              'Assistant is an AI sorting expert. Always follow local recycling guidelines.',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Colors.black54),
             ),
           ),
@@ -116,14 +116,14 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         children: [
-          Text('Assistant is thinking...', style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic)),
+          Text('Assistant is analyzing...', style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontStyle: FontStyle.italic)),
         ],
       ),
     );
   }
 
   Widget _buildQuickSuggestions() {
-    final suggestions = ['What is anemia?', 'How to take a better scan?', 'Symptoms of anemia'];
+    final suggestions = ['What is biodegradable?', 'How to recycle plastic?', 'Composting tips'];
     return SizedBox(
       height: 50,
       child: ListView.builder(
@@ -155,7 +155,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: 'Ask a health question...',
+                hintText: 'Ask about waste sorting...',
                 filled: true,
                 fillColor: Colors.grey.shade100,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
