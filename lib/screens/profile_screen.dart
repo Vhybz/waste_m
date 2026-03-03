@@ -141,8 +141,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       final String publicUrl = supabase.storage.from('profiles').getPublicUrl(filePath);
       await supabase.from('profiles').update({'profile_pic': publicUrl}).eq('id', user.id);
-      
-      // Refresh local data
       await _fetchProfile();
 
       if (mounted) {
@@ -371,7 +369,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
         value: value,
-        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        isExpanded: true,
+        items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, overflow: TextOverflow.ellipsis))).toList(),
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label, 

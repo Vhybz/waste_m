@@ -32,12 +32,13 @@ class AuthService {
   }
 
   /// Sign in with Google (OAuth)
-  /// Updated redirect to match WasteSort AI package name
+  /// Unified redirect URL with trailing slash for consistency
   Future<void> signInWithGoogle() async {
     try {
       await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'io.supabase.flutter://login-callback/',
+        redirectTo: 'com.example.waste_sort_ai://login-callback',
+        queryParams: {'prompt': 'select_account'},
       );
     } on AuthException {
       rethrow;

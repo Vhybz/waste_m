@@ -19,6 +19,7 @@ import 'package:waste_sort_ai/screens/settings_screen.dart';
 import 'package:waste_sort_ai/screens/analytics_screen.dart';
 import 'package:waste_sort_ai/screens/chat_screen.dart';
 import 'package:waste_sort_ai/screens/about_app_screen.dart';
+import 'package:waste_sort_ai/screens/developer_screen.dart';
 import 'package:waste_sort_ai/screens/disclaimer_screen.dart';
 import 'package:waste_sort_ai/screens/capture_screen.dart';
 import 'package:waste_sort_ai/screens/processing_screen.dart';
@@ -93,6 +94,7 @@ class WasteSortAIApp extends StatelessWidget {
             AppRoutes.analytics: (context) => const AnalyticsScreen(),
             AppRoutes.chat: (context) => const ChatScreen(),
             AppRoutes.aboutApp: (context) => const AboutAppScreen(),
+            AppRoutes.developer: (context) => const DeveloperScreen(),
             AppRoutes.disclaimer: (context) => const DisclaimerScreen(),
             AppRoutes.capture: (context) => const CaptureScreen(),
             AppRoutes.processing: (context) => const ProcessingScreen(),

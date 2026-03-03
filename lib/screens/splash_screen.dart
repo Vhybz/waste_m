@@ -38,42 +38,49 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 140,
-              height: 140,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFF1F8E9),
-                image: DecorationImage(
-                  image: AssetImage('asset/images/a.jpg'),
-                  fit: BoxFit.cover,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(height: 100),
+                Container(
+                  width: 140,
+                  height: 140,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFF1F8E9),
+                    image: DecorationImage(
+                      image: AssetImage('asset/images/a.jpg'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                const Text(
+                  'WasteSort AI',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2E7D32),
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Smart Waste Classification',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'WasteSort AI',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2E7D32),
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Smart Waste Classification',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

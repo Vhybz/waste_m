@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:label="cjt_scan AI"
+        android:label="wasteAI"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
@@ -32,7 +32,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.example.cjt_scan" android:host="login-callback" />
+                <data android:scheme="com.example.waste_sort_ai" android:host="login-callback" />
             </intent-filter>
 
             <!-- SECONDARY/FALLBACK scheme for standard Supabase examples -->

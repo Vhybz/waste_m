@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Cjt Scan</string>
+	<string>WasteSort AI</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>cjt_scan</string>
+	<string>waste_sort_ai</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -31,8 +31,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
@@ -45,5 +43,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- PERMISSIONS FOR WASTESORT AI -->
+	<key>NSCameraUsageDescription</key>
+	<string>WasteSort AI needs camera access to scan and classify waste items.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>WasteSort AI needs gallery access to allow you to upload images for classification.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app does not require microphone access, but some dependencies may request it.</string>
+
 </dict>
 </plist>

@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    // Listen for auth state changes to route to home automatically
     _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
       final session = data.session;
       if (session != null && mounted) {
@@ -41,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
         content: Text(message),
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
       ),
     );
   }
@@ -66,14 +68,21 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _socialSignIn(OAuthProvider provider) async {
     setState(() => _isLoading = true);
     try {
+      // THE REDIRECT URL MUST BE ADDED TO SUPABASE DASHBOARD
+      // AUTH -> URL CONFIGURATION -> REDIRECT URLS
+      const String redirectUrl = 'com.example.waste_sort_ai://login-callback/';
+      
       await supabase.auth.signInWithOAuth(
         provider,
-        redirectTo: 'io.supabase.flutter://login-callback/',
+        redirectTo: redirectUrl,
+        queryParams: {'prompt': 'select_account'},
       );
     } on AuthException catch (e) {
-      _showErrorSnackBar(e.message);
+      debugPrint('Auth Error: ${e.message}');
+      _showErrorSnackBar('Google Sign-In Error: ${e.message}');
     } catch (e) {
-      _showErrorSnackBar('Could not sign in with ${provider.name}.');
+      debugPrint('Unexpected Error: $e');
+      _showErrorSnackBar('Could not sign in with Google.');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -104,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Image.asset('asset/images/a.jpg', height: 120),
                   const SizedBox(height: 32),
                   const Text(
-                    'WasteSort AI',
+                    'wasteAI',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.primary),
                   ),
@@ -169,7 +178,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   
                   const SizedBox(height: 32),
                   
-                  // Google Sign-In Button
                   OutlinedButton.icon(
                     onPressed: () => _socialSignIn(OAuthProvider.google),
                     icon: const Icon(Icons.login_rounded, size: 24),

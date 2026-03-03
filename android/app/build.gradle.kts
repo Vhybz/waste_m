@@ -6,9 +6,9 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cjt_scan"
+    namespace = "com.example.waste_sort_ai"
     compileSdk = flutter.compileSdkVersion
-    // ndkVersion = "27.0.12077973" // Using Flutter default for better compatibility
+    // ndkVersion = "27.0.12077973" // Commented out to use Flutter default
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -20,8 +20,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.cjt_scan"
-        minSdk = flutter.minSdkVersion // Required for TFLite
+        applicationId = "com.example.waste_sort_ai"
+        minSdk = flutter.minSdkVersion // TFLite requires at least 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -30,6 +30,8 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
