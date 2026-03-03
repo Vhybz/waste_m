@@ -15,14 +15,16 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkSession();
+    _navigateToNext();
   }
 
-  Future<void> _checkSession() async {
-    await Future.delayed(const Duration(seconds: 3));
+  Future<void> _navigateToNext() async {
+    // Small delay for the splash animation
+    await Future.delayed(const Duration(seconds: 2));
     
     if (!mounted) return;
 
+    // Check session - Supabase handles persistence automatically
     final session = Supabase.instance.client.auth.currentSession;
 
     if (session != null) {
@@ -43,11 +45,11 @@ class _SplashScreenState extends State<SplashScreen> {
             Container(
               width: 140,
               height: 140,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF1F8E9),
-                image: const DecorationImage(
-                  image: AssetImage('asset/images/a.jpg'), // UPDATED to use a.jpg
+                color: Color(0xFFF1F8E9),
+                image: DecorationImage(
+                  image: AssetImage('asset/images/a.jpg'),
                   fit: BoxFit.cover,
                 ),
               ),

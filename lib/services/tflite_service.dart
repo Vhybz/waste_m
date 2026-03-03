@@ -1,7 +1,6 @@
 
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:flutter/foundation.dart'; // Added for kIsWeb
+import 'package:flutter/foundation.dart'; 
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 
@@ -10,7 +9,7 @@ class TfliteService {
   bool _isModelLoaded = false;
 
   Future<void> loadModel() async {
-    if (kIsWeb) return; // TFLite does not work on Flutter Web easily
+    if (kIsWeb) return;
     try {
       _interpreter = await Interpreter.fromAsset('asset/model/mnist_model.tflite');
       _isModelLoaded = true;

@@ -41,7 +41,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         id: UniqueKey().toString(),
         name: 'Waste Item ${DateTime.now().hour}:${DateTime.now().minute}',
         status: _mapStatus(predictionData['prediction']),
-        confidence: predictionData['confidence'],
+        confidence: (predictionData['confidence'] as num).toDouble(),
         date: DateTime.now(),
         imagePath: imageFile.path,
       );
